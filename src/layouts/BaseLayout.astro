@@ -1,0 +1,22 @@
+---
+/* Importa los estilos globales (Tailwind) */
+import "../styles/global.css";
+
+/* children = contenido de cada página que use este layout */
+const { children } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Geolocalizer</title>
+  </head>
+
+  <body class="min-h-screen bg-gradient-to-b from-primary-light to-primary-dark text-accent-dark antialiased">
+    <main class="flex flex-col items-center justify-center py-12">
+      <slot />   <!-- aquí aparecerá el contenido de la página -->
+    </main>
+  </body>
+</html>

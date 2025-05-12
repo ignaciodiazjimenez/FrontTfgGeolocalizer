@@ -1,16 +1,7 @@
 ---
-import '../styles/global.css';   /*  ⭠  activa Tailwind  */
+import BaseLayout from "../layouts/BaseLayout.astro";
 ---
 
-<html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Geolocalizer TFG</title>
-  </head>
-
-  <body class="bg-gradient-to-b from-[#C9D6BD] to-[#597D60] min-h-screen flex items-center justify-center">
-    <h1 class="text-4xl text-white font-bold">
-      Hola Astro + Tailwind
-    </h1>
-  </body>
-</html>
+<BaseLayout>
+  <h1 class="text-4xl font-bold text-white">Hola Astro + Tailwind</h1>
+</BaseLayout>

@@ -1,17 +1,17 @@
-import { defineConfig } from 'tailwindcss';
-
-export default defineConfig({
+export default {
   content: ['./src/**/*.{astro,html,js,jsx,ts,tsx}'],
   theme: {
     extend: {
-      /* PALETA DE COLORES */
+      /* PALETA */
       colors: {
         'primary-light': '#C9D6BD',
         'primary-dark':  '#597D60',
         'accent-dark':   '#2F3E2E',
+        'accent-primary': '#B6E388',
+        'accent-hover':   '#A0CF79',
       },
 
-      /* ANIMACIONES PERSONALIZADAS */
+      /* ANIMACIONES */
       keyframes: {
         'fade-in-up': {
           '0%':   { opacity: '0', transform: 'translateY(10px)' },
@@ -36,4 +36,4 @@ export default defineConfig({
     },
   },
   plugins: [],
-});
+};

@@ -1,1 +1,8 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* transición suave global */
+* {
+  transition: all 0.3s ease-in-out;
+}
