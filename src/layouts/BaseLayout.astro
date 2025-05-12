@@ -1,9 +1,10 @@
 ---
-/* Importa los estilos globales (Tailwind) */
 import "../styles/global.css";
+import Sidebar from "../components/Sidebar.jsx";
 
-/* children = contenido de cada página que use este layout */
-const { children } = Astro.props;
+/* `showSidebar` será true por defecto.
+   En páginas públicas (login, registro) lo pasaremos a false. */
+const { children, showSidebar = true } = Astro.props;
 ---
 
 <!DOCTYPE html>
@@ -15,8 +16,12 @@ const { children } = Astro.props;
   </head>
 
   <body class="min-h-screen bg-gradient-to-b from-primary-light to-primary-dark text-accent-dark antialiased">
-    <main class="flex flex-col items-center justify-center py-12">
-      <slot />   <!-- aquí aparecerá el contenido de la página -->
+    {showSidebar && <Sidebar />}
+
+    <!-- Contenido principal -->
+    <main class="min-h-screen flex flex-col items-center justify-center
+                 {showSidebar ? 'ml-52' : ''} py-20">
+      <slot />
     </main>
   </body>
 </html>

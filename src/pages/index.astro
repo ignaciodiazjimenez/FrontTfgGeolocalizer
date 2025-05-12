@@ -1,7 +1,29 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import Boton      from "../components/Boton.jsx";
 ---
 
 <BaseLayout>
-  <h1 class="text-4xl font-bold text-white">Hola Astro + Tailwind</h1>
+  <section class="text-center space-y-8 animate-fade-in-up">
+    <!-- Título grande con degradado interno -->
+    <h1 class="text-5xl md:text-6xl font-extrabold leading-tight text-white">
+      Bienvenid@ a<br />
+      <span class="bg-gradient-to-r from-primary-light to-accent-dark bg-clip-text text-transparent">
+        Geolocalizer
+      </span>
+    </h1>
+
+    <!-- Descripción breve -->
+    <p class="max-w-xl mx-auto text-white/80 text-lg">
+      Conectamos ubicaciones y personas, facilitando la exploración y el acceso
+      a información en tiempo real. ¡Potenciamos tu experiencia de navegar con
+      precisión y facilidad!
+    </p>
+
+    <!-- Botones -->
+    <div class="flex justify-center gap-8 pt-6">
+      <Boton texto="Iniciar sesión" href="/login" />
+      <Boton texto="Registrarse"   href="/registro" />
+    </div>
+  </section>
 </BaseLayout>
