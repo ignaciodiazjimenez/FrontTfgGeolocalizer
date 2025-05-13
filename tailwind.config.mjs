@@ -2,6 +2,11 @@ export default {
   content: ['./src/**/*.{astro,html,js,jsx,ts,tsx}'],
   theme: {
     extend: {
+      /* FUENTE Inter por defecto */
+      fontFamily: {
+        sans: ['"Inter"', 'system-ui', 'sans-serif'],
+      },
+
       /* PALETA */
       colors: {
         'primary-light': '#C9D6BD',

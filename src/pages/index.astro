@@ -3,9 +3,9 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import Boton      from "../components/Boton.jsx";
 ---
 
-<BaseLayout>
+<BaseLayout showSidebar={false}>
   <section class="text-center space-y-8 animate-fade-in-up">
-    <!-- Título grande con degradado interno -->
+    <!-- Título -->
     <h1 class="text-5xl md:text-6xl font-extrabold leading-tight text-white">
       Bienvenid@ a<br />
       <span class="bg-gradient-to-r from-primary-light to-accent-dark bg-clip-text text-transparent">
@@ -13,7 +13,7 @@ import Boton      from "../components/Boton.jsx";
       </span>
     </h1>
 
-    <!-- Descripción breve -->
+    <!-- Descripción -->
     <p class="max-w-xl mx-auto text-white/80 text-lg">
       Conectamos ubicaciones y personas, facilitando la exploración y el acceso
       a información en tiempo real. ¡Potenciamos tu experiencia de navegar con
