@@ -1,15 +1,8 @@
 // ===============================================
-// utils/api.js — Funciones para conectar con el backend
+// utils/api.js — Funciones para conectar con el backend real
 // ===============================================
 
-// Cambia esta URL cuando pongas el backend en producción o uses otro puerto
-const BASE_URL = "http://localhost:3001";
-
-// Rutas de los endpoints que usarás (ajústalas según tu backend real)
-const ENDPOINTS = {
-  login: "/auth/login",        // Endpoint POST para iniciar sesión
-  register: "/auth/register",  // Endpoint POST para registrar usuario
-};
+const BASE_URL = "http://localhost:8000"; // Ajusta si cambias el puerto o host
 
 // ============================
 // Helpers para autenticación
@@ -17,16 +10,15 @@ const ENDPOINTS = {
 
 /**
  * Devuelve el token JWT almacenado en localStorage
- * o null si no hay ninguno.
+ * (solo si se ejecuta en el navegador)
  */
 export function getToken() {
+  if (typeof window === "undefined") return null; // Evita error en SSR
   return localStorage.getItem("token") || null;
 }
 
 /**
  * Devuelve una cabecera Authorization con Bearer token
- * o un objeto vacío si no hay token.
- * Útil para añadir a cualquier fetch protegido.
  */
 export function getAuthHeader() {
   const token = getToken();
@@ -34,9 +26,7 @@ export function getAuthHeader() {
 }
 
 /**
- * Comprueba si una respuesta HTTP fue correcta.
- * - Si no lo fue, intenta extraer el mensaje de error del JSON.
- * - Si lo fue, devuelve los datos JSON.
+ * Valida la respuesta del backend
  */
 async function handleResponse(response) {
   if (!response.ok) {
@@ -47,17 +37,14 @@ async function handleResponse(response) {
 }
 
 // ============================
-// Funciones públicas para usar desde el front
+// Funciones de autenticación
 // ============================
 
 /**
- * Llama al backend para iniciar sesión con usuario y contraseña.
- * Si devuelve un token, lo guarda en localStorage.
- * @param {string} username
- * @param {string} password
+ * Inicia sesión y guarda el token en localStorage
  */
 export async function login(username, password) {
-  const res = await fetch(BASE_URL + ENDPOINTS.login, {
+  const res = await fetch(`${BASE_URL}/token`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, password }),
@@ -65,18 +52,49 @@ export async function login(username, password) {
 
   const data = await handleResponse(res);
 
-  // Si hay token en la respuesta, lo guardamos para futuras peticiones
-  if (data.token) localStorage.setItem("token", data.token);
+  if (data.access_token) {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("token", data.access_token);
+    }
+    return data.access_token;
+  }
 
-  return data;
+  throw new Error("Token no recibido");
 }
 
 /**
- * Llama al backend para registrar un nuevo usuario.
- * @param {Object} user - { username, email, password }
+ * Cierra sesión localmente
+ */
+export function logout() {
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("token");
+  }
+}
+
+/**
+ * Obtiene el rol del usuario desde el token JWT
+ */
+export function getUserRole() {
+  const token = getToken();
+  if (!token) return null;
+
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.role || null;
+  } catch {
+    return null;
+  }
+}
+
+// ============================
+// Gestión de usuarios
+// ============================
+
+/**
+ * Registra un nuevo usuario
  */
 export async function register(user) {
-  const res = await fetch(BASE_URL + ENDPOINTS.register, {
+  const res = await fetch(`${BASE_URL}/usuarios/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(user),
@@ -86,22 +104,46 @@ export async function register(user) {
 }
 
 /**
- * Cierra la sesión actual borrando el token localmente.
- * (no llama al backend si usas JWT stateless)
+ * Obtiene todos los usuarios (admin)
  */
-export function logout() {
-  localStorage.removeItem("token");
+export async function getUsers() {
+  const res = await fetch(`${BASE_URL}/usuarios/`, {
+    headers: {
+      "Content-Type": "application/json",
+      ...getAuthHeader(),
+    },
+  });
+
+  return handleResponse(res);
 }
 
 /**
- * Cambia la contraseña de un usuario.
- * El backend debe validar username + email antes de aceptar.
+ * Elimina un usuario por ID
  */
-export async function recoverPassword({ username, email, nuevaPassword }) {
-  const res = await fetch(`${BASE_URL}/auth/recover`, {
+export async function deleteUser(id) {
+  const res = await fetch(`${BASE_URL}/usuarios/${id}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      ...getAuthHeader(),
+    },
+  });
+
+  return handleResponse(res);
+}
+
+// ============================
+// Recuperación de contraseña
+// ============================
+
+/**
+ * Cambia la contraseña enviando usuario, email y nueva contraseña
+ */
+export async function recoverPassword({ username, email, nueva_password }) {
+  const res = await fetch(`${BASE_URL}/usuarios/cambiar_contrasena/${username}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, email, nuevaPassword }),
+    body: JSON.stringify({ email, nueva_password }),
   });
 
   return handleResponse(res);

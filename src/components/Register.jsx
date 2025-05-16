@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { register } from "../utils/api";  // ← función que conecta con el backend
+import { register } from "../utils/api";
 
 export default function Register() {
   const [user, setUser] = useState({
@@ -7,6 +7,7 @@ export default function Register() {
     email: "",
     password: "",
     repeat: "",
+    role: "cliente", // valor por defecto
   });
 
   const [error, setError] = useState("");
@@ -17,31 +18,24 @@ export default function Register() {
   const handleRegister = async () => {
     setError("");
 
-    // Validación previa antes de enviar
     if (user.password !== user.repeat) {
       setError("Las contraseñas no coinciden");
       return;
     }
 
     try {
-      // ⚠️ Solo enviamos al backend los campos que necesita
-      const { username, email, password } = user;
+      // extraer campos necesarios para el backend
+      const { username, email, password, role } = user;
 
-      // 🟡 Aquí se llama al backend → POST /auth/register (definido en api.js)
-      await register({ username, email, password });
+      await register({ username, email, password, role });
 
-      // 🟢 Si todo va bien, mostramos mensaje y redirigimos al login
-      alert("Registro exitoso");
+      alert("Usuario registrado correctamente");
       window.location.href = "/login";
-
     } catch (err) {
-      // 🔴 Si el backend responde con error, lo mostramos aquí
-      console.error(err);
-      setError(err.message || "Error al registrar usuario");
+      setError(err.message || "Error al registrar");
     }
   };
 
-  // (la parte visual no cambia)
   return (
     <div className="w-96 mx-auto">
       <h1 className="text-4xl md:text-5xl font-bold text-center mb-12 text-accent-primary drop-shadow-lg">
@@ -60,8 +54,7 @@ export default function Register() {
           <div className="space-y-4">
             <input
               name="username"
-              type="text"
-              placeholder="Username"
+              placeholder="Nombre de usuario"
               value={user.username}
               onChange={handleChange}
               className="w-full px-4 py-2 bg-white/50 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-primary placeholder-gray-600"
@@ -69,7 +62,7 @@ export default function Register() {
             <input
               name="email"
               type="email"
-              placeholder="Email"
+              placeholder="Correo electrónico"
               value={user.email}
               onChange={handleChange}
               className="w-full px-4 py-2 bg-white/50 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-primary placeholder-gray-600"
@@ -77,7 +70,7 @@ export default function Register() {
             <input
               name="password"
               type="password"
-              placeholder="Password"
+              placeholder="Contraseña"
               value={user.password}
               onChange={handleChange}
               className="w-full px-4 py-2 bg-white/50 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-primary placeholder-gray-600"
@@ -85,7 +78,7 @@ export default function Register() {
             <input
               name="repeat"
               type="password"
-              placeholder="Repeat password"
+              placeholder="Repetir contraseña"
               value={user.repeat}
               onChange={handleChange}
               className="w-full px-4 py-2 bg-white/50 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-primary placeholder-gray-600"
@@ -94,13 +87,13 @@ export default function Register() {
 
           <button
             onClick={handleRegister}
-            className="w-full mt-8 py-2 bg-accent-primary hover:bg-accent-hover hover:scale-105 transition-all duration-500 text-black font-semibold rounded-md"
+            className="w-full mt-6 py-2 bg-accent-primary hover:bg-accent-hover hover:scale-105 transition-all duration-500 text-black font-semibold rounded-md"
           >
             REGISTRARME
           </button>
 
           {error && (
-            <p className="mt-4 text-red-600 text-sm font-medium text-center">
+            <p className="text-red-600 text-sm font-medium text-center mt-4">
               {error}
             </p>
           )}
