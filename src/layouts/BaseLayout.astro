@@ -2,9 +2,8 @@
 import "../styles/global.css";
 import Sidebar from "../components/Sidebar.jsx";
 
-/* `showSidebar` será true por defecto.
-   En páginas públicas (login, registro) lo pasaremos a false. */
 const { children, showSidebar = true } = Astro.props;
+const currentPath = Astro.url.pathname;
 ---
 
 <!DOCTYPE html>
@@ -14,13 +13,14 @@ const { children, showSidebar = true } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Geolocalizer</title>
   </head>
-
   <body class="font-sans min-h-screen bg-gradient-to-b from-primary-light to-primary-dark text-accent-dark antialiased">
-    {showSidebar && <Sidebar />}
+    {showSidebar && <Sidebar currentPath={currentPath} />}
 
-    <!-- Contenido principal -->
-    <main class="min-h-screen flex flex-col items-center justify-center
-                 {showSidebar ? 'ml-52' : ''} py-20">
+    <main
+      class={`min-h-screen flex flex-col items-center justify-center py-20 ${
+        showSidebar ? "ml-52" : ""
+      }`}
+    >
       <slot />
     </main>
   </body>

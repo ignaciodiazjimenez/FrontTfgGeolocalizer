@@ -1,8 +1,9 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import LoginForm  from "../components/Login.jsx";
+import LoginComponent from "../components/Login.jsx";
 ---
 
 <BaseLayout showSidebar={false}>
-  <LoginForm />
+  {/* Le decimos a Astro que cargue/hidrate el componente en el cliente */}
+  <LoginComponent client:load />
 </BaseLayout>

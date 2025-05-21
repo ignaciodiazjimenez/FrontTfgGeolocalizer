@@ -6,35 +6,43 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleLogin = async () => {
-    setError("");
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    console.log("🟢 handleLogin ejecutado");
+
+    if (!username.trim() || !password) {
+      setError("Por favor completa todos los campos");
+      return;
+    }
 
     try {
-      const token = await login(username, password);
-      console.log("TOKEN RECIBIDO:", token);
-      localStorage.setItem("token", token);
+      // login() ahora envía form-urlencoded y devuelve el access_token
+      const token = await login(username.trim(), password);
+      console.log("🔐 TOKEN:", token);
 
-      // Extraer y mostrar payload para depurar
+      // Guardamos token en localStorage
+      if (typeof window !== "undefined") {
+        localStorage.setItem("token", token);
+      }
+
+      // Decodificamos payload del JWT para extraer el rol
       const payload = JSON.parse(atob(token.split(".")[1]));
-      console.log("PAYLOAD DECODIFICADO:", payload);
-      const rol = payload.role;
+      console.log("📦 PAYLOAD:", payload);
+      const rol = payload.role || payload?.rol || "";
 
-      alert(`Bienvenido ${username} (rol: ${rol})`);
-
-      let destino = "/";
-      if (rol === "admin") destino = "/admin";
-      else if (rol === "cliente") destino = "/cliente";
-
-      console.log("Redirigiendo a:", destino);
+      // Dependiendo del rol redirigimos
+      const destino = rol === "admin" ? "/admin" : "/cliente";
+      console.log("➡️ Redirigiendo a:", destino);
       window.location.href = destino;
+
     } catch (err) {
-      console.error("Error de login:", err);
-      setError("Credenciales incorrectas o servidor no responde");
+      console.error("❌ Login error:", err);
+      setError("Credenciales incorrectas");
     }
   };
 
   return (
-    <div className="w-96 mx-auto">
+    <form onSubmit={handleLogin} className="w-96 mx-auto">
       <h1 className="text-4xl md:text-5xl font-bold text-center mb-12 text-accent-primary drop-shadow-lg">
         <span className="block text-transparent bg-gradient-to-r from-[#2F3E2E] to-[#A9D18E] bg-clip-text">
           Geolocalizer
@@ -51,16 +59,16 @@ export default function Login() {
           <div className="space-y-4">
             <input
               type="text"
-              placeholder="Username"
+              placeholder="Usuario"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={(e) => { setUsername(e.target.value); setError(""); }}
               className="w-full px-4 py-2 bg-white/50 text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-primary placeholder-gray-600"
             />
             <input
               type="password"
-              placeholder="Password"
+              placeholder="Contraseña"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => { setPassword(e.target.value); setError(""); }}
               className="w-full px-4 py-2 bg-white/50 text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-primary placeholder-gray-600"
             />
           </div>
@@ -76,14 +84,16 @@ export default function Login() {
           </div>
 
           <button
-            onClick={handleLogin}
+            type="submit"
             className="w-full mt-4 py-2 bg-accent-primary hover:bg-accent-hover hover:scale-105 transition-all duration-500 text-black font-semibold rounded-md"
           >
-            LOGIN
+            Iniciar Sesión
           </button>
 
           {error && (
-            <p className="mt-4 text-red-600 text-sm text-center font-medium">{error}</p>
+            <p className="mt-4 text-red-600 text-sm text-center font-medium">
+              {error}
+            </p>
           )}
 
           <p className="text-center text-sm mt-4 text-gray-800">
@@ -94,6 +104,6 @@ export default function Login() {
           </p>
         </div>
       </div>
-    </div>
+    </form>
   );
 }

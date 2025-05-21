@@ -1,16 +1,25 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import RutaProtegida from "../components/RutaProtegida.jsx";
+import ListaDispositivos from "../components/ListaDispositivos.jsx";
 ---
 
 <BaseLayout>
-  <RutaProtegida soloRol="cliente">
-    <section class="text-white px-8 py-12 space-y-4">
-      <h1 class="text-3xl font-bold">Panel del Cliente</h1>
-      <p class="text-white/80">Aquí podrás gestionar tus dispositivos, consultar su ubicación y más.</p>
+  <RutaProtegida allowedRole="cliente" redirectTo="/login">
+    <section class="text-accent-dark px-8 py-12 space-y-4">
+      <h1 class="text-3xl font-bold">Mis Dispositivos</h1>
+      <p class="text-accent-dark/80">
+        Aquí podrás ver y gestionar los dispositivos que tienes instalados.
+      </p>
 
-      <div class="mt-6 rounded-xl border border-white/20 p-6 bg-white/5">
-        <p class="text-sm text-white/60">✨ Aquí irá el contenido del dashboard dinámico (dispositivos, mapas, etc).</p>
+      <div class="mt-6 rounded-xl border border-accent-dark/20 p-6 bg-white/50">
+        <p class="text-sm text-accent-dark/60">
+          🐮 Lista de collares con sus placas para seguimiento de ganado.
+        </p>
+      </div>
+
+      <div class="mt-12">
+        <ListaDispositivos />
       </div>
     </section>
   </RutaProtegida>

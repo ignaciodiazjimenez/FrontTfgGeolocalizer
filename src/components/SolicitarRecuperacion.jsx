@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-// import { solicitarRecuperacion } from "../utils/api"; // ← lo conectamos cuando tengas el backend
+import { solicitarRecuperacion } from "../utils/api";
 
 export default function SolicitarRecuperacion() {
   const [email, setEmail] = useState("");
@@ -15,10 +15,8 @@ export default function SolicitarRecuperacion() {
     }
 
     try {
-      // Aquí se llamará al backend real
-      // await solicitarRecuperacion(email);
-
-      setEnviado(true); // simulamos éxito
+      await solicitarRecuperacion(email); // llamada real al backend
+      setEnviado(true);
     } catch (err) {
       setError(err.message || "Error al enviar el correo");
     }

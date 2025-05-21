@@ -1,23 +1,26 @@
 import React, { useEffect, useState } from "react";
 import { getToken, getUserRole } from "../utils/api";
 
-export default function RutaProtegida({ children, soloRol }) {
-  const [autorizado, setAutorizado] = useState(false);
+export default function RutaProtegida({ allowedRole, redirectTo, children }) {
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     const token = getToken();
-    const rol = getUserRole();
+    const role = getUserRole();
 
-    if (!token) {
-      window.location.href = "/login";
-    } else if (soloRol && rol !== soloRol) {
-      window.location.href = "/";
+    // Si no hay token o el rol no coincide, redirigimos
+    if (!token || role !== allowedRole) {
+      window.location.href = redirectTo;
     } else {
-      setAutorizado(true);
+      setReady(true);
     }
-  }, [soloRol]);
+  }, [allowedRole, redirectTo]);
 
-  if (!autorizado) return null;
+  // Mientras comprobamos, no renderizamos nada
+  if (!ready) {
+    return null;
+  }
 
+  // Si está todo OK, mostramos los hijos
   return <>{children}</>;
 }
