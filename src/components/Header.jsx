@@ -1,38 +1,38 @@
-// src/components/Header.jsx
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 export default function Header() {
-  return (
-    <header
-      className="
-        fixed top-0 left-52 right-0 h-16
-        bg-white/80 dark:bg-gray-800/80
-        backdrop-blur flex items-center justify-between
-        px-8 shadow
-      "
-    >
-      <h1 className="text-2xl font-bold text-primary-dark dark:text-primary-light">
-        Geolocalizer
-      </h1>
+  const [dark, setDark] = useState(false);
 
+  // Al montar en el cliente, comprobamos si ya está el modo dark
+  useEffect(() => {
+    const isDark = document.documentElement.classList.contains("dark");
+    setDark(isDark);
+  }, []);
+
+  // Toggle al hacer click
+  function toggleTheme() {
+    document.documentElement.classList.toggle("dark");
+    setDark((prev) => !prev);
+  }
+
+  return (
+    <header className="w-full flex items-center justify-between px-6 py-4 bg-primary-light dark:bg-primary-dark">
+      <h1 className="text-2xl font-bold">Geolocalizer</h1>
       <div className="flex items-center space-x-4">
-        {/* Botón de cambiar idioma */}
+        {/* Botón cambiar idioma (ejemplo estático) */}
         <button
           aria-label="Cambiar idioma"
-          className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
+          className="p-2 rounded hover:bg-accent-hover transition"
         >
-          🌐
+          EN
         </button>
-
-        {/* Botón de tema oscuro/claro */}
+        {/* Botón oscuro/clarro */}
         <button
           aria-label="Cambiar tema"
-          className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
-          onClick={() => {
-            document.documentElement.classList.toggle("dark");
-          }}
+          className="p-2 rounded hover:bg-accent-hover transition"
+          onClick={toggleTheme}
         >
-          {document.documentElement.classList.contains("dark") ? "🌙" : "☀️"}
+          {dark ? "🌙" : "☀️"}
         </button>
       </div>
     </header>
