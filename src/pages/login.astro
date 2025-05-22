@@ -1,8 +1,9 @@
 ---
 // src/pages/login.astro
 import BaseLayout from "../layouts/BaseLayout.astro";
-import Loginform from "../components/Login.jsx";
+import Loginf      from "../components/Login.jsx";
 
+// En login no queremos Sidebar ni Header ni Greeting, solo Footer
 const showSidebar  = false;
 const showHeader   = false;
 const showGreeting = false;
@@ -15,5 +16,6 @@ const showFooter   = true;
   showGreeting={showGreeting}
   showFooter={showFooter}
 >
-  <Loginform />
+  <!-- Montamos el Login como Astro Island -->
+  <Loginf client:load />
 </BaseLayout>
