@@ -1,27 +1,47 @@
 ---
 import "../styles/global.css";
-import Sidebar from "../components/Sidebar.jsx";
+import Sidebar  from "../components/Sidebar.jsx";
+import Header   from "../components/Header.jsx";
+import Greeting from "../components/Greeting.jsx";
+import Footer   from "../components/Footer.jsx";
 
-const { children, showSidebar = true } = Astro.props;
+const {
+  children,
+  showSidebar  = true,
+  showHeader   = true,
+  showGreeting = true,
+  showFooter   = true,
+} = Astro.props;
+
 const currentPath = Astro.url.pathname;
 ---
 
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="h-full">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Geolocalizer</title>
   </head>
-  <body class="font-sans min-h-screen bg-gradient-to-b from-primary-light to-primary-dark text-accent-dark antialiased">
-    {showSidebar && <Sidebar currentPath={currentPath} />}
+  <body
+    class="
+      flex flex-col min-h-screen
+      font-sans antialiased
+      bg-gradient-to-b from-primary-light to-primary-dark
+      text-accent-dark
+    "
+  >
+    {showSidebar && <Sidebar currentPath={currentPath} client:load />}
 
-    <main
-      class={`min-h-screen flex flex-col items-center justify-center py-20 ${
-        showSidebar ? "ml-52" : ""
-      }`}
-    >
-      <slot />
-    </main>
+    <div class={`flex flex-col flex-1 transition-all ${showSidebar ? "ml-52" : ""}`}>
+      {showHeader && <Header client:load />}
+
+      <main class="flex-grow flex flex-col items-center justify-start py-20">
+        {showGreeting && <Greeting client:load />}
+        <slot />
+      </main>
+
+      {showFooter && <Footer client:load />}
+    </div>
   </body>
 </html>

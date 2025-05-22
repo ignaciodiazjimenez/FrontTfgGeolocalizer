@@ -1,77 +1,59 @@
 // src/utils/api.js
 
-const BASE_URL = "http://localhost:8000/api/v1.5";
+// 1️⃣ Cambiamos la versión de la API a v2.0
+const BASE_URL = "http://localhost:8000/api/v2.0";
 
-// ————— Auxiliares de autenticación —————
+/** Auxiliares de auth **/
 
-/**
- * Devuelve el token JWT almacenado en localStorage
- */
 export function getToken() {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem("token") || null;
+  return localStorage.getItem("token");
 }
 
-/**
- * Devuelve el header Authorization: Bearer <token>
- */
 export function getAuthHeader() {
   const token = getToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-/**
- * Maneja respuestas HTTP: lanza error si !ok, o devuelve JSON
- */
 async function handleResponse(res) {
   if (!res.ok) {
+    // Leer texto para mostrar detalle
     const text = await res.text().catch(() => "");
     throw new Error(text || "Error en la petición");
   }
   return res.json();
 }
 
-// ————— Autenticación —————
+/** Autenticación **/
 
 /**
  * POST /token
- * Envía username+password como form-urlencoded y devuelve access_token
+ * Ahora enviamos JSON { username, password }
  */
 export async function login(username, password) {
-  const form = new URLSearchParams();
-  form.append("username", username);
-  form.append("password", password);
-
   const res = await fetch(`${BASE_URL}/token`, {
     method: "POST",
     headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
+      "Content-Type": "application/json",
     },
-    body: form.toString(),
+    body: JSON.stringify({ username, password }),
   });
 
   const data = await handleResponse(res);
+
   if (data.access_token) {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("token", data.access_token);
-    }
+    // Guardamos el token
+    localStorage.setItem("token", data.access_token);
     return data.access_token;
   }
+
   throw new Error("Token no recibido");
 }
 
-/**
- * Elimina el token local
- */
 export function logout() {
-  if (typeof window !== "undefined") {
-    localStorage.removeItem("token");
-  }
+  localStorage.removeItem("token");
 }
 
-/**
- * Extrae el rol del payload del JWT
- */
 export function getUserRole() {
   const token = getToken();
   if (!token) return null;
@@ -83,25 +65,20 @@ export function getUserRole() {
   }
 }
 
-// ————— Usuarios (Admin) —————
+/** Usuarios (admin) **/
 
-/**
- * POST /usuarios/
- * Crea un usuario { username, password, email, rol_id }
- */
 export async function register(user) {
   const res = await fetch(`${BASE_URL}/usuarios/`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...getAuthHeader(),
+    },
     body: JSON.stringify(user),
   });
   return handleResponse(res);
 }
 
-/**
- * GET /usuarios/
- * Obtiene todos los usuarios (requiere token)
- */
 export async function getUsers() {
   const res = await fetch(`${BASE_URL}/usuarios/`, {
     headers: {
@@ -112,10 +89,6 @@ export async function getUsers() {
   return handleResponse(res);
 }
 
-/**
- * DELETE /usuarios/{usuario_id}
- * Elimina un usuario por ID (requiere token)
- */
 export async function deleteUser(id) {
   const res = await fetch(`${BASE_URL}/usuarios/${id}`, {
     method: "DELETE",
@@ -127,40 +100,8 @@ export async function deleteUser(id) {
   return handleResponse(res);
 }
 
-// ————— Dispositivos —————
+/** Dispositivos **/
 
-/**
- * GET /dispositivos/usuario/{usuario_id}
- * Obtiene dispositivos para el usuario extraído del token
- */
-export async function getDispositivosUsuario() {
-  const res = await fetch(`${BASE_URL}/dispositivos/usuario/${getUserId()}`, {
-    headers: {
-      "Content-Type": "application/json",
-      ...getAuthHeader(),
-    },
-  });
-  return handleResponse(res);
-}
-
-/**
- * DELETE /dispositivos/{dispositivo_id}
- * Elimina un dispositivo por ID (requiere token)
- */
-export async function deleteDispositivo(id) {
-  const res = await fetch(`${BASE_URL}/dispositivos/${id}`, {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-      ...getAuthHeader(),
-    },
-  });
-  return handleResponse(res);
-}
-
-/**
- * Extrae el user_id del payload del JWT
- */
 function getUserId() {
   const token = getToken();
   if (!token) return null;
@@ -172,37 +113,31 @@ function getUserId() {
   }
 }
 
-// ————— Recuperación de contraseña —————
-
-/**
- * POST /usuarios/solicitar_recuperacion
- * Pide email para enviar enlace de recuperación
- */
-export async function solicitarRecuperacion(email) {
-  const res = await fetch(`${BASE_URL}/usuarios/solicitar_recuperacion`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email }),
-  });
-  return handleResponse(res);
-}
-
-/**
- * POST /usuarios/cambiar_contrasena/{usuario_id}
- * Cambia la contraseña con nuevo password
- */
-export async function recoverPassword({ username, email, nueva_password }) {
+export async function getDispositivosUsuario() {
+  const userId = getUserId();
   const res = await fetch(
-    `${BASE_URL}/usuarios/cambiar_contrasena/${username}`,
+    `${BASE_URL}/dispositivos/usuario/${userId}`,
     {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, nueva_password }),
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeader(),
+      },
     }
   );
   return handleResponse(res);
 }
-// POST /dispositivos/ — Crear nuevo dispositivo
+
+export async function deleteDispositivo(id) {
+  const res = await fetch(`${BASE_URL}/dispositivos/${id}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      ...getAuthHeader(),
+    },
+  });
+  return handleResponse(res);
+}
+
 export async function createDispositivo(device) {
   const res = await fetch(`${BASE_URL}/dispositivos/`, {
     method: "POST",
@@ -215,7 +150,6 @@ export async function createDispositivo(device) {
   return handleResponse(res);
 }
 
-// PATCH /dispositivos/{dispositivo_id} — Actualizar dispositivo
 export async function updateDispositivo(id, payload) {
   const res = await fetch(`${BASE_URL}/dispositivos/${id}`, {
     method: "PATCH",
@@ -225,5 +159,28 @@ export async function updateDispositivo(id, payload) {
     },
     body: JSON.stringify(payload),
   });
+  return handleResponse(res);
+}
+
+/** Recuperación de contraseña **/
+
+export async function solicitarRecuperacion(email) {
+  const res = await fetch(`${BASE_URL}/usuarios/solicitar_recuperacion`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+  return handleResponse(res);
+}
+
+export async function recoverPassword({ username, email, nueva_password }) {
+  const res = await fetch(
+    `${BASE_URL}/usuarios/cambiar_contrasena/${username}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, nueva_password }),
+    }
+  );
   return handleResponse(res);
 }

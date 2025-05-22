@@ -5,7 +5,6 @@
   font-weight: 400;
   font-display: swap;
 }
-
 @font-face {
   font-family: "Inter";
   src: url("/assets/fonts/inter/Inter-Bold.woff2") format("woff2");
@@ -13,9 +12,7 @@
   font-display: swap;
 }
 
-/* ========================== */
-
-
+/* Tailwind directives */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

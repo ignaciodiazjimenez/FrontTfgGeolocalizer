@@ -1,26 +1,19 @@
 ---
+// src/pages/admin.astro
 import BaseLayout from "../layouts/BaseLayout.astro";
 import RutaProtegida from "../components/RutaProtegida.jsx";
-import ListaUsuarios from "../components/ListaUsuarios.jsx";
+
+const showSidebar  = true;
+const showHeader   = true;
+const showGreeting = true;
+const showFooter   = true;
 ---
 
-<BaseLayout>
-  <RutaProtegida allowedRole="admin" redirectTo="/login">
-    <section class="text-white px-8 py-12 space-y-4">
-      <h1 class="text-3xl font-bold">Panel de Administración</h1>
-      <p class="text-white/80">
-        Gestión de usuarios, dispositivos y funcionalidades de administrador.
-      </p>
-
-      <div class="mt-6 rounded-xl border border-white/20 p-6 bg-white/5">
-        <p class="text-sm text-white/60">
-          🔧 Aquí irá el contenido exclusivo para administradores (CRUDs, estadísticas, etc).
-        </p>
-      </div>
-
-      <div class="mt-12">
-        <ListaUsuarios />
-      </div>
-    </section>
-  </RutaProtegida>
+<BaseLayout
+  showSidebar={showSidebar}
+  showHeader={showHeader}
+  showGreeting={showGreeting}
+  showFooter={showFooter}
+>
+  <RutaProtegida />
 </BaseLayout>

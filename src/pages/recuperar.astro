@@ -1,8 +1,19 @@
 ---
-import BaseLayout     from "../layouts/BaseLayout.astro";
-import RecuperarForm  from "../components/Recuperar.jsx";
+// src/pages/recuperar.astro
+import BaseLayout from "../layouts/BaseLayout.astro";
+import RecuperarForm from "../components/Recuperar.jsx";  // <-- alias distinto
+
+const showSidebar  = false;
+const showHeader   = false;
+const showGreeting = false;
+const showFooter   = true;
 ---
 
-<BaseLayout showSidebar={false}>
+<BaseLayout
+  showSidebar={showSidebar}
+  showHeader={showHeader}
+  showGreeting={showGreeting}
+  showFooter={showFooter}
+>
   <RecuperarForm />
 </BaseLayout>
