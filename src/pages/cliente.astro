@@ -1,6 +1,6 @@
 ---
 // src/pages/cliente.astro
-import BaseLayout from "../layouts/BaseLayout.astro";
+import BaseLayout    from "../layouts/BaseLayout.astro";
 import RutaProtegida from "../components/RutaProtegida.jsx";
 
 const showSidebar  = true;
@@ -15,8 +15,8 @@ const showFooter   = true;
   showGreeting={showGreeting}
   showFooter={showFooter}
 >
-  <RutaProtegida allowedRole="cliente" redirectTo="/login">
-    <!-- Aquí va TODO tu contenido de la página cliente -->
+  <!-- El rol válido es “user” -->
+  <RutaProtegida allowedRole="user" redirectTo="/login">
     <h2 class="text-3xl font-bold">Panel de Cliente</h2>
   </RutaProtegida>
 </BaseLayout>

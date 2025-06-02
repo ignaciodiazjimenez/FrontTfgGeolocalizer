@@ -1,32 +1,25 @@
 // src/utils/api.js
+// ==============================
+// URL base real del backend
+// (todas las peticiones empiezan por /api/v2.2)
+const BASE_URL = "http://127.0.0.1:8000/api/v2.2";
 
-// Debe coincidir con el que usas en Postman:
-// POST http://127.0.0.1:8000/api/v2.0/token
-const BASE_URL = "http://127.0.0.1:8000/api/v2.0";
-
-/**
- * Devuelve el token JWT almacenado en localStorage
- */
+/*==================================================*
+ *  Helpers de autenticación
+ *==================================================*/
 export function getToken() {
   if (typeof window === "undefined") return null;
   return localStorage.getItem("token") || null;
 }
 
-/**
- * Devuelve el header Authorization: Bearer <token>
- */
 export function getAuthHeader() {
   const token = getToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-/**
- * Maneja respuestas HTTP: lanza error si !ok, o devuelve JSON
- */
 async function handleResponse(res) {
   const text = await res.text().catch(() => "");
   if (!res.ok) {
-    // intenta parsear un JSON de error { detail: ... }
     try {
       const err = JSON.parse(text);
       throw new Error(err.detail || JSON.stringify(err));
@@ -37,16 +30,13 @@ async function handleResponse(res) {
   return text ? JSON.parse(text) : {};
 }
 
-/**
- * POST /token
- * Envía username+password como JSON y devuelve access_token
- */
+/*==================================================*
+ *  Login  (POST /token_username)
+ *==================================================*/
 export async function login(username, password) {
-  const res = await fetch(`${BASE_URL}/token`, {
+  const res = await fetch(`${BASE_URL}/token_username`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, password }),
   });
 
@@ -60,18 +50,15 @@ export async function login(username, password) {
   throw new Error("Token no recibido");
 }
 
-/**
- * Elimina el token local
- */
+/*==================================================*
+ *  Logout & helpers
+ *==================================================*/
 export function logout() {
   if (typeof window !== "undefined") {
     localStorage.removeItem("token");
   }
 }
 
-/**
- * Extrae el rol del payload del JWT
- */
 export function getUserRole() {
   const token = getToken();
   if (!token) return null;
@@ -83,4 +70,8 @@ export function getUserRole() {
   }
 }
 
-// …y el resto de llamadas a tu API (register, getUsers, etc.) permanece igual, usando BASE_URL y getAuthHeader() …
+/*==================================================*
+ *  (El resto de llamadas a tu API siguen igual…)
+ *  register(), getUsers(), etc. —> usa BASE_URL
+ *  y getAuthHeader() para añadir Authorization
+ *==================================================*/
