@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { recoverPassword } from "../utils/api";
-
+import { recoverPassword, verifyUserEmail } from "../utils/api"; // Asumiendo que agregas un endpoint para verificación
 
 export default function Recuperar() {
   const [step, setStep] = useState(1);
@@ -11,44 +10,69 @@ export default function Recuperar() {
     repetir: "",
   });
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) =>
     setDatos({ ...datos, [e.target.name]: e.target.value });
 
-  const handleVerificar = () => {
+  // Paso 1: Verificar que el usuario y el correo existen
+  const handleVerificar = async (e) => {
+    e.preventDefault();
     setError("");
-    if (!datos.username || !datos.email) {
+
+    const { username, email } = datos;
+    if (!username.trim() || !email.trim()) {
       setError("Completa usuario y correo");
       return;
     }
 
-    // Aquí llamarías a la API real para verificar identidad
-    setStep(2); // simulado
+    try {
+      setLoading(true);
+      // Llamada real al backend para verificar identidad
+      // Por ejemplo: await verifyUserEmail(username, email);
+      await verifyUserEmail({ username, email });
+      setStep(2);
+    } catch (err) {
+      // Si la API devuelve un error (por ejemplo, usuario o email no coinciden)
+      setError(err.response?.data?.message || "Error al verificar datos");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleCambiar = async () => {
+  // Paso 2: Cambiar la contraseña
+  const handleCambiar = async (e) => {
+    e.preventDefault();
     setError("");
-  
-    if (datos.nueva !== datos.repetir) {
+
+    const { nueva, repetir, username, email } = datos;
+    if (!nueva || !repetir) {
+      setError("Ambos campos de contraseña son obligatorios");
+      return;
+    }
+
+    if (nueva !== repetir) {
       setError("Las contraseñas no coinciden");
       return;
     }
-  
+
     try {
-      // Llamada real al backend
+      setLoading(true);
+      // Llamada real al backend para actualizar contraseña
       await recoverPassword({
-        username: datos.username,
-        email: datos.email,
-        nuevaPassword: datos.nueva,
+        username,
+        email,
+        nuevaPassword: nueva,
       });
-  
+
       alert("Contraseña actualizada con éxito");
       window.location.href = "/login";
     } catch (err) {
-      setError(err.message || "Error al cambiar la contraseña");
+      setError(err.response?.data?.message || "Error al cambiar la contraseña");
+    } finally {
+      setLoading(false);
     }
   };
-  
 
   return (
     <div className="w-96 mx-auto">
@@ -66,7 +90,8 @@ export default function Recuperar() {
 
         <div className="relative bg-white/30 backdrop-blur-md rounded-xl p-8 text-gray-900 border border-white/50 shadow-xl z-10 transition-all duration-500 space-y-4">
           {step === 1 ? (
-            <>
+            // FORMULARIO DE VERIFICACIÓN
+            <form onSubmit={handleVerificar} className="space-y-4">
               <input
                 name="username"
                 placeholder="Nombre de usuario"
@@ -83,14 +108,18 @@ export default function Recuperar() {
                 className="w-full px-4 py-2 bg-white/50 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-primary placeholder-gray-600"
               />
               <button
-                onClick={handleVerificar}
-                className="w-full mt-4 py-2 bg-accent-primary hover:bg-accent-hover hover:scale-105 transition-all duration-500 text-black font-semibold rounded-md"
+                type="submit"
+                disabled={loading}
+                className={`w-full mt-4 py-2 bg-accent-primary hover:bg-accent-hover hover:scale-105 transition-all duration-500 text-black font-semibold rounded-md ${
+                  loading ? "opacity-50 cursor-not-allowed" : ""
+                }`}
               >
-                Verificar
+                {loading ? "Verificando..." : "Verificar"}
               </button>
-            </>
+            </form>
           ) : (
-            <>
+            // FORMULARIO PARA CAMBIAR CONTRASEÑA
+            <form onSubmit={handleCambiar} className="space-y-4">
               <input
                 name="nueva"
                 type="password"
@@ -108,12 +137,15 @@ export default function Recuperar() {
                 className="w-full px-4 py-2 bg-white/50 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-primary placeholder-gray-600"
               />
               <button
-                onClick={handleCambiar}
-                className="w-full mt-4 py-2 bg-accent-primary hover:bg-accent-hover hover:scale-105 transition-all duration-500 text-black font-semibold rounded-md"
+                type="submit"
+                disabled={loading}
+                className={`w-full mt-4 py-2 bg-accent-primary hover:bg-accent-hover hover:scale-105 transition-all duration-500 text-black font-semibold rounded-md ${
+                  loading ? "opacity-50 cursor-not-allowed" : ""
+                }`}
               >
-                Cambiar contraseña
+                {loading ? "Cambiando..." : "Cambiar contraseña"}
               </button>
-            </>
+            </form>
           )}
 
           {error && (

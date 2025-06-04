@@ -5,6 +5,7 @@ import FormContainer from "./FormContainer.jsx";
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [remember, setRemember] = useState(false); // Nuevo estado para "Recordarme"
   const [error, setError] = useState("");
 
   const handleLogin = async (e) => {
@@ -22,6 +23,12 @@ export default function Login() {
       // Guardamos token en localStorage
       if (typeof window !== "undefined") {
         localStorage.setItem("token", token);
+      }
+
+      // Si el usuario marcó "Recordarme", establecemos una cookie que caduca en 7 días
+      if (remember && typeof document !== "undefined") {
+        // max-age en segundos: 7 días → 7 * 24 * 60 * 60 = 604800
+        document.cookie = `token=${token}; path=/; max-age=604800`;
       }
 
       // Decodificamos payload del JWT para extraer el rol
@@ -50,26 +57,22 @@ export default function Login() {
             type="text"
             placeholder="Usuario"
             value={username}
-            onChange={(e) => { setUsername(e.target.value); setError(""); }}
+            onChange={(e) => {
+              setUsername(e.target.value);
+              setError("");
+            }}
             className="w-full px-4 py-2 bg-white/50 text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-primary placeholder-gray-600"
           />
           <input
             type="password"
             placeholder="Contraseña"
             value={password}
-            onChange={(e) => { setPassword(e.target.value); setError(""); }}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              setError("");
+            }}
             className="w-full px-4 py-2 bg-white/50 text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-primary placeholder-gray-600"
           />
-        </div>
-
-        <div className="flex items-center justify-between mt-4 text-sm text-gray-800">
-          <label className="flex items-center space-x-2">
-            <input type="checkbox" className="accent-accent-primary" />
-            <span>Recordarme</span>
-          </label>
-          <a href="/recuperar" className="text-blue-600 hover:underline">
-            ¿Olvidaste la contraseña?
-          </a>
         </div>
 
         <button
@@ -79,9 +82,7 @@ export default function Login() {
           Iniciar Sesión
         </button>
 
-        {error && (
-          <p className="mt-4 text-red-600 text-center">{error}</p>
-        )}
+        {error && <p className="mt-4 text-red-600 text-center">{error}</p>}
 
         <p className="text-center text-sm mt-4 text-gray-800">
           ¿Nuevo aquí?{" "}
