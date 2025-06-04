@@ -1,11 +1,11 @@
 ---
-// src/pages/cliente.astro
 import BaseLayout    from "../layouts/BaseLayout.astro";
 import RutaProtegida from "../components/RutaProtegida.jsx";
 
+// Configuramos qué se ve en esta página
 const showSidebar  = true;
 const showHeader   = true;
-const showGreeting = true;
+const showGreeting = true;   // Activamos el saludo
 const showFooter   = true;
 ---
 
@@ -15,8 +15,10 @@ const showFooter   = true;
   showGreeting={showGreeting}
   showFooter={showFooter}
 >
-  <!-- El rol válido es “user” -->
-  <RutaProtegida allowedRole="user" redirectTo="/login">
+  <!-- RutaProtegida se hidrata en cliente para comprobar token/rol -->
+  <RutaProtegida allowedRole="user" redirectTo="/login" client:load>
+    <!-- Justo aquí, por debajo del <Greeting /> del layout, irá el contenido -->
     <h2 class="text-3xl font-bold">Panel de Cliente</h2>
+    <!-- Resto del contenido del panel... -->
   </RutaProtegida>
 </BaseLayout>

@@ -39,7 +39,7 @@ export default function Sidebar({ currentPath }) {
           p-2 rounded-md bg-primary-light/70 backdrop-blur
         "
       >
-        🍔
+        ☰
       </button>
 
       {/* --- Drawer -------------------------------------------------- */}

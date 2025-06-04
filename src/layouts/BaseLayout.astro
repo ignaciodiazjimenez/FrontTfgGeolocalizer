@@ -38,6 +38,7 @@ const currentPath = Astro.url.pathname;
 
       <main class="flex-grow flex flex-col items-center justify-start py-20">
         {showGreeting && <Greeting client:load />}
+
         <slot />
       </main>
 

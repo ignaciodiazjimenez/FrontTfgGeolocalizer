@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Boton      from "../components/Boton.jsx";
+import CheckSession from "../components/CheckSession";
 
 // En la página principal no queremos ni Sidebar ni Header,
 // pero sí Greeting y Footer:
@@ -16,11 +17,8 @@ const showFooter   = true;
   showGreeting={showGreeting}
   showFooter={showFooter}
 >
+  <CheckSession client:load />
   <section class="text-center max-w-3xl mx-auto px-4">
-    <p class="uppercase text-sm tracking-widest mb-2 text-accent-primary">
-      ¡Bienvenid@, root!
-    </p>
-
     <h1 class="text-6xl font-extrabold mb-4">
       Bienvenid@ a<br />
       <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent-primary to-accent-dark">

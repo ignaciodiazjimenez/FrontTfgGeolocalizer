@@ -1,3 +1,4 @@
+// src/components/Greeting.jsx
 import React, { useState, useEffect } from "react";
 import { getToken } from "../utils/api";
 
