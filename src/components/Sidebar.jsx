@@ -9,14 +9,10 @@ export default function Sidebar({ currentPath }) {
       { label: "Inicio",        to: "/cliente",               icon: "🏠" },
       { label: "Dispositivos",  to: "/cliente/dispositivos",  icon: "📟" },
       { label: "Mapa",          to: "/cliente/mapa",          icon: "🗺️" },
-      { label: "Noticias",      to: "/cliente/noticias",      icon: "📰" },
-      { label: "Quiénes somos", to: "/cliente/quienes-somos", icon: "ℹ️" },
     ],
     admin: [
       { label: "Inicio",                 to: "/admin",              icon: "🏠" },
       { label: "Gestionar Clientes",     to: "/admin/clientes",     icon: "👥" },
-      { label: "Gestionar Dispositivos", to: "/admin/dispositivos", icon: "📟" },
-      { label: "Tickets de incidencias", to: "/admin/tickets",      icon: "🎫" },
     ],
   };
   const menuItems = menus[role] ?? [];

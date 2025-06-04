@@ -1,33 +1,48 @@
+// src/components/Register.jsx
 import React, { useState } from "react";
 import { register } from "../utils/api";
+import FormContainer from "./FormContainer.jsx";
 
 export default function Register() {
-  const [user, setUser] = useState({
+  /* ---------------- state ---------------- */
+  const [form, setForm] = useState({
     username: "",
     email: "",
     password: "",
     repeat: "",
-    role: "cliente", // valor por defecto
   });
-
   const [error, setError] = useState("");
 
-  const handleChange = (e) =>
-    setUser({ ...user, [e.target.name]: e.target.value });
+  /* ------------- handlers --------------- */
+  const handleChange = (e) => {
+    setError("");
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
-  const handleRegister = async () => {
+  const handleRegister = async (e) => {
+    e.preventDefault();
     setError("");
 
-    if (user.password !== user.repeat) {
+    /* validaciones mínimas */
+    if (!form.username.trim() || !form.email.trim() || !form.password || !form.repeat) {
+      setError("Rellena todos los campos");
+      return;
+    }
+    if (form.password !== form.repeat) {
       setError("Las contraseñas no coinciden");
       return;
     }
 
     try {
-      // extraer campos necesarios para el backend
-      const { username, email, password, role } = user;
+      /* payload EXACTO que necesita tu backend */
+      const payload = {
+        username: form.username.trim(),
+        email:    form.email.trim(),
+        password: form.password,
+        rol_id:   3,                     // 3 = “user/cliente”
+      };
 
-      await register({ username, email, password, role });
+      await register(payload);          // → POST /usuarios
 
       alert("Usuario registrado correctamente");
       window.location.href = "/login";
@@ -36,76 +51,70 @@ export default function Register() {
     }
   };
 
+  /* -------------- UI -------------------- */
   return (
-    <div className="w-96 mx-auto">
-      <h1 className="text-4xl md:text-5xl font-bold text-center mb-12 text-accent-primary drop-shadow-lg">
-        <span className="block text-transparent bg-gradient-to-r from-[#2F3E2E] to-[#A9D18E] bg-clip-text">
+    <form onSubmit={handleRegister} className="w-full">
+      {/* título principal */}
+      <h1 className="text-4xl md:text-5xl font-bold text-center mb-8 text-accent-primary drop-shadow-lg">
+        <span className="block text-transparent bg-gradient-to-r from-accent-dark to-accent-primary bg-clip-text">
           Geolocalizer
         </span>
       </h1>
 
-      <div className="relative">
-        <div className="absolute inset-0 rounded-xl opacity-0 hover:opacity-100 hover:blur-md bg-accent-primary transition-all duration-500 animate-glow border border-accent-primary z-0" />
-        <div className="absolute inset-0 rounded-xl border-2 border-accent-primary opacity-50 animate-pulse-sonar z-0" />
-
-        <div className="relative bg-white/30 backdrop-blur-md rounded-xl p-8 text-gray-900 border border-white/50 shadow-xl z-10 transition-all duration-500">
-          <h2 className="text-2xl font-semibold text-center mb-4">Registro</h2>
-
-          <div className="space-y-4">
-            <input
-              name="username"
-              placeholder="Nombre de usuario"
-              value={user.username}
-              onChange={handleChange}
-              className="w-full px-4 py-2 bg-white/50 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-primary placeholder-gray-600"
-            />
-            <input
-              name="email"
-              type="email"
-              placeholder="Correo electrónico"
-              value={user.email}
-              onChange={handleChange}
-              className="w-full px-4 py-2 bg-white/50 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-primary placeholder-gray-600"
-            />
-            <input
-              name="password"
-              type="password"
-              placeholder="Contraseña"
-              value={user.password}
-              onChange={handleChange}
-              className="w-full px-4 py-2 bg-white/50 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-primary placeholder-gray-600"
-            />
-            <input
-              name="repeat"
-              type="password"
-              placeholder="Repetir contraseña"
-              value={user.repeat}
-              onChange={handleChange}
-              className="w-full px-4 py-2 bg-white/50 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-primary placeholder-gray-600"
-            />
-          </div>
-
-          <button
-            onClick={handleRegister}
-            className="w-full mt-6 py-2 bg-accent-primary hover:bg-accent-hover hover:scale-105 transition-all duration-500 text-black font-semibold rounded-md"
-          >
-            REGISTRARME
-          </button>
-
-          {error && (
-            <p className="text-red-600 text-sm font-medium text-center mt-4">
-              {error}
-            </p>
-          )}
-
-          <p className="text-center text-sm mt-4 text-gray-800">
-            ¿Ya tienes cuenta?{" "}
-            <a href="/login" className="text-blue-600 hover:underline">
-              Inicia sesión
-            </a>
-          </p>
+      {/* tarjeta con brillo */}
+      <FormContainer title="Registro">
+        <div className="space-y-4">
+          <input
+            name="username"
+            placeholder="Nombre de usuario"
+            value={form.username}
+            onChange={handleChange}
+            className="w-full px-4 py-2 bg-white/50 text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-primary placeholder-gray-600"
+          />
+          <input
+            name="email"
+            type="email"
+            placeholder="Correo electrónico"
+            value={form.email}
+            onChange={handleChange}
+            className="w-full px-4 py-2 bg-white/50 text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-primary placeholder-gray-600"
+          />
+          <input
+            name="password"
+            type="password"
+            placeholder="Contraseña"
+            value={form.password}
+            onChange={handleChange}
+            className="w-full px-4 py-2 bg-white/50 text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-primary placeholder-gray-600"
+          />
+          <input
+            name="repeat"
+            type="password"
+            placeholder="Repetir contraseña"
+            value={form.repeat}
+            onChange={handleChange}
+            className="w-full px-4 py-2 bg-white/50 text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-primary placeholder-gray-600"
+          />
         </div>
-      </div>
-    </div>
+
+        <button
+          type="submit"
+          className="w-full mt-6 py-2 bg-accent-primary hover:bg-accent-hover hover:scale-105 transition-all duration-300 text-black font-semibold rounded-full"
+        >
+          REGISTRARME
+        </button>
+
+        {error && (
+          <p className="mt-4 text-red-600 text-center">{error}</p>
+        )}
+
+        <p className="text-center text-sm mt-4 text-gray-800">
+          ¿Ya tienes cuenta?{" "}
+          <a href="/login" className="text-blue-600 hover:underline">
+            Inicia sesión
+          </a>
+        </p>
+      </FormContainer>
+    </form>
   );
 }

@@ -1,19 +1,20 @@
+
 // src/utils/api.js
-// ==============================
-// URL base real del backend
-// (todas las peticiones empiezan por /api/v2.2)
-const BASE_URL = import.meta.env.PUBLIC_API_URL; // para Vite
-/*==================================================*
- *  Helpers de autenticación
- *==================================================*/
+// ============================================================
+// URL base real (puedes sobreescribirla con PUBLIC_API_URL)
+const BASE_URL =
+  import.meta.env.PUBLIC_API_URL?.trim().replace(/\/$/, "") ||
+  "http://127.0.0.1:8000/api/v2.2";
+
+/*──────────────────────── Helpers de auth ─────────────────────*/
 export function getToken() {
   if (typeof window === "undefined") return null;
   return localStorage.getItem("token") || null;
 }
 
 export function getAuthHeader() {
-  const token = getToken();
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  const t = getToken();
+  return t ? { Authorization: `Bearer ${t}` } : {};
 }
 
 async function handleResponse(res) {
@@ -29,9 +30,7 @@ async function handleResponse(res) {
   return text ? JSON.parse(text) : {};
 }
 
-/*==================================================*
- *  Login  (POST /token_username)
- *==================================================*/
+/*────────────────────────── LOGIN ─────────────────────────────*/
 export async function login(username, password) {
   const res = await fetch(`${BASE_URL}/token_username`, {
     method: "POST",
@@ -40,107 +39,94 @@ export async function login(username, password) {
   });
 
   const data = await handleResponse(res);
+
+  /** Ejemplo de payload backend:
+   * { access_token, token_type:"bearer", role:"user", usuario_id: 3 }
+   */
   if (data.access_token) {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("token", data.access_token);      
-      localStorage.setItem("rol", data.role || data.rol || "");
-      localStorage.setItem("user_id", data.usuario_id); 
-    }
+    localStorage.setItem("token", data.access_token);
+    if (data.role)       localStorage.setItem("rol", data.role);
+    if (data.usuario_id) localStorage.setItem("user_id", data.usuario_id);
     return data.access_token;
   }
   throw new Error("Token no recibido");
 }
 
-/*==================================================*
- *  Logout & helpers
- *==================================================*/
-export function logout() {
-  if (typeof window !== "undefined") {
-    localStorage.removeItem("token");
-  }
+/*────────────────────────── REGISTER ──────────────────────────*/
+export async function register({ username, email, password, rol_id = 3 }) {
+  const res = await fetch(`${BASE_URL}/usuarios/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, email, password, rol_id }),
+  });
+
+  return handleResponse(res); // lanza error si falla
 }
 
+/*────────────────────────── LOGOUT ────────────────────────────*/
+export function logout() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("rol");
+  localStorage.removeItem("user_id");
+}
+
+/*─────────────────────── INFO DEL USUARIO ─────────────────────*/
 export function getUserRole() {
+  // preferimos el rol decodificado del token (fuente única de verdad)
   const token = getToken();
   if (!token) return null;
   try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    return payload.role || null;
+    const { role } = JSON.parse(atob(token.split(".")[1]));
+    return role || null;
   } catch {
     return null;
   }
 }
 
-/*==================================================*
- *  (El resto de llamadas a tu API siguen igual…)
- *  register(), getUsers(), etc. —> usa BASE_URL
- *  y getAuthHeader() para añadir Authorization
- *==================================================*/
+/*─────────────────────── DISPOSITIVOS CRUD ───────────────────*/
 export async function getDispositivos() {
-  console.log(BASE_URL)
-  console.log("Haciendo llamada a la API de dispositivos...");
-  const token = localStorage.getItem("token");
-  const idUsuario = localStorage.getItem("user_id");
-  const resp = await fetch(`${BASE_URL}/dispositivos/`, {
+  const res = await fetch(`${BASE_URL}/dispositivos/`, {
     headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json", // opcional, si tu backend lo espera
+      ...getAuthHeader(),
     },
   });
-
-  console.log("Llamando a la API de dispositivos...");
-  if (!resp.ok) throw new Error("Error al listar dispositivos");
-
-  const data = await resp.json();
-  return data.map((d) => ({
-    id: d.id,
-    mac: d.mac,
-    nombre: d.nombre,
-    active: d.active,
-  }));
+  return handleResponse(res);
 }
-
 
 export async function deleteDispositivo(id) {
-  const token_delete = localStorage.getItem("token");
-  const resp = await fetch(`${BASE_URL}/dispositivos/${id}/`, {
+  await fetch(`${BASE_URL}/dispositivos/${id}`, {
     method: "DELETE",
     headers: {
-      Authorization: `Bearer ${token_delete}`,
-      "Content-Type": "application/json", // opcional, si tu backend lo espera
+      ...getAuthHeader(),
     },
-  });
-  if (!resp.ok) throw new Error("Error al borrar dispositivo");
+  }).then(handleResponse);
 }
 
-export async function createDispositivo(payload) {
-  console.log("Creando dispositivo con payload:", payload);
-  const token_create = localStorage.getItem("token");
-  // payload = { mac: string, nombre: string, active: boolean }
-  const resp = await fetch(`${BASE_URL}/dispositivos/${idUsuario}`, {
+export async function createDispositivo({ mac, nombre, active = true }) {
+  const usuario_id = localStorage.getItem("user_id");
+  if (!usuario_id) throw new Error("user_id no disponible en localStorage");
+
+  const payload = { mac, nombre, active, usuario_id: Number(usuario_id) };
+
+  const res = await fetch(`${BASE_URL}/dispositivos/`, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${token_create}`,
-      "Content-Type": "application/json", // opcional, si tu backend lo espera
+      "Content-Type": "application/json",
+      ...getAuthHeader(),
     },
     body: JSON.stringify(payload),
   });
-  if (!resp.ok) throw new Error("Error al crear dispositivo");
-  return await resp.json();
+  return handleResponse(res);
 }
 
 export async function updateDispositivo(id, payload) {
-  console.log(payload);
-  const token_update = localStorage.getItem("token");
-  // payload = { mac, nombre, active }
-  const resp = await fetch(`${BASE_URL}/dispositivos/${id}/`, {
+  const res = await fetch(`${BASE_URL}/dispositivos/${id}`, {
     method: "PATCH",
-     headers: {
-      Authorization: `Bearer ${token_update}`,
-      "Content-Type": "application/json", // opcional, si tu backend lo espera
+    headers: {
+      "Content-Type": "application/json",
+      ...getAuthHeader(),
     },
-    body: JSON.stringify(payload),
+    body: JSON.stringify(payload), // { mac?, nombre?, active? }
   });
-  if (!resp.ok) throw new Error("Error al actualizar dispositivo");
-  return await resp.json();
+  return handleResponse(res);
 }
