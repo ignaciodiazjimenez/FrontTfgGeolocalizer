@@ -22,12 +22,12 @@ const redirectTo = "/login";
   showGreeting={showGreeting}
   showFooter={showFooter}
 >
-  <!-- Hydratamos el componente de protección de ruta y su hijo DeviceManager -->
+  <!-- Hidratamos el componente de protección de ruta y su hijo DeviceManager -->
   <RutaProtegida
     client:load
     allowedRole={allowedRole}
     redirectTo={redirectTo}
   >
-    <DeviceManager />
+    <DeviceManager  client:load/>
   </RutaProtegida>
 </BaseLayout>
