@@ -1,0 +1,19 @@
+---
+// src/pages/admin/usuarios.astro
+import UserManager from "../../components/UserManager.jsx";
+import Sidebar from "../../components/Sidebar.jsx";
+import { Fragment } from "react";
+const currentPath = "/admin/usuarios";
+---
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Gestión de Usuarios</title>
+  </head>
+  <body class="bg-green-100 min-h-screen">
+    <Sidebar client:load currentPath={currentPath} />
+    <main class="ml-0 md:ml-56 p-4">
+      <UserManager client:load />
+    </main>
+  </body>
+</html>

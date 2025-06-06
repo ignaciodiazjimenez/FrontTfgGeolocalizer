@@ -1,0 +1,28 @@
+---
+import BaseLayout    from "../../layouts/BaseLayout.astro";
+import RutaProtegida  from "../../components/RutaProtegida.jsx";
+import Mapaa           from "../../components/Mapa.jsx";
+
+// Control de layout
+const showSidebar  = true;
+const showHeader   = true;
+const showGreeting = false;
+const showFooter   = true;
+
+// Permitimos tanto “user” como “admin” (para que no redirija al login durante las pruebas)
+// Nota: Más adelante puedes filtrar solo “user” o agregar otros roles.
+const allowedRole = ["user", "admin"];
+const redirectTo  = "/login";
+---
+
+<BaseLayout
+  showSidebar={showSidebar}
+  showHeader={showHeader}
+  showGreeting={showGreeting}
+  showFooter={showFooter}
+>
+  <RutaProtegida client:load allowedRole={allowedRole} redirectTo={redirectTo}>
+    {/** “client:only='react'” asegura que Mapa.jsx no intente renderizarse en SSR */}
+    <Mapaa client:only="react" />
+  </RutaProtegida>
+</BaseLayout>

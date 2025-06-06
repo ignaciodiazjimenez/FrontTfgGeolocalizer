@@ -1,3 +1,4 @@
+// src/components/ListaUsuarios.jsx
 import React, { useEffect, useState } from "react";
 import { getUsers, deleteUser } from "../utils/api";
 
@@ -5,7 +6,6 @@ export default function ListaUsuarios() {
   const [usuarios, setUsuarios] = useState([]);
   const [error, setError] = useState("");
 
-  // Cargar usuarios al montar
   useEffect(() => {
     fetchUsuarios();
   }, []);
@@ -24,7 +24,6 @@ export default function ListaUsuarios() {
     if (!confirm("¿Seguro que deseas eliminar este usuario?")) return;
     try {
       await deleteUser(id);
-      // Refrescar lista
       fetchUsuarios();
     } catch (err) {
       console.error(err);
@@ -55,7 +54,7 @@ export default function ListaUsuarios() {
               <td className="border px-4 py-2">{u.id}</td>
               <td className="border px-4 py-2">{u.username}</td>
               <td className="border px-4 py-2">{u.email}</td>
-              <td className="border px-4 py-2">{u.role}</td>
+              <td className="border px-4 py-2">{u.rol.nombre}</td>
               <td className="border px-4 py-2">
                 <button
                   onClick={() => handleEliminar(u.id)}

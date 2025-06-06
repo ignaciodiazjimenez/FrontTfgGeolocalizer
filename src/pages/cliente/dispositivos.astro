@@ -1,19 +1,17 @@
 ---
-// src/pages/cliente/dispositivos.astro
-
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import RutaProtegida from "../../components/RutaProtegida.jsx";
-import DeviceManager from "../../components/DeviceManager.jsx";
+import BaseLayout     from "../../layouts/BaseLayout.astro";
+import RutaProtegida   from "../../components/RutaProtegida.jsx";
+import DeviceManager   from "../../components/DeviceManager.jsx";
 
 // Opciones para el layout
-const showSidebar = true;
-const showHeader = true;
-const showGreeting = false;
-const showFooter = true;
+const showSidebar   = true;
+const showHeader    = true;
+const showGreeting  = false;
+const showFooter    = true;
 
-// El cliente debe ser un “cliente” (no admin) para ver esta página
-const allowedRole = "user";
-const redirectTo = "/login";
+// Permitir tanto “user” **como** “admin”
+const allowedRole = ["user", "admin", "root"];
+const redirectTo  = "/login";
 ---
 
 <BaseLayout
@@ -22,12 +20,11 @@ const redirectTo = "/login";
   showGreeting={showGreeting}
   showFooter={showFooter}
 >
-  <!-- Hidratamos el componente de protección de ruta y su hijo DeviceManager -->
   <RutaProtegida
     client:load
     allowedRole={allowedRole}
     redirectTo={redirectTo}
   >
-    <DeviceManager  client:load/>
+    <DeviceManager client:load />
   </RutaProtegida>
 </BaseLayout>

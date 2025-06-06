@@ -1,13 +1,12 @@
 // src/utils/api.js
 // ────────────────────────────────────────────────────────────────────────────
-// Asegúrate de que en tu .env esté definido sin slash al final, por ejemplo:
+// Asegúrate de que en tu `.env` esté:
 //   PUBLIC_API_URL=http://127.0.0.1:8000/api/v2.2
 
 const BASE_URL =
   import.meta.env.PUBLIC_API_URL?.trim().replace(/\/$/, "") ||
   "http://127.0.0.1:8000/api/v2.2";
 
-/*──────────────────────── Helpers de autenticación ──────────────────────────*/
 export function getToken() {
   if (typeof window === "undefined") return null;
   return localStorage.getItem("token") || null;
@@ -31,25 +30,28 @@ async function handleResponse(res) {
   return text ? JSON.parse(text) : {};
 }
 
-/*────────────────────────── LOGIN ──────────────────────────────*/
+/*──────────────────────────────── LOGIN / REGISTER / LOGOUT ─────────────────────────────────*/
+
+// 1) Login por username
 export async function login(username, password) {
   const res = await fetch(`${BASE_URL}/token_username`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, password }),
   });
-
   const data = await handleResponse(res);
+
+  // Payload de ejemplo: { access_token, token_type:"bearer", role:"user", usuario_id: 3 }
   if (data.access_token) {
     localStorage.setItem("token", data.access_token);
-    if (data.role) localStorage.setItem("rol", data.role);
+    if (data.role)       localStorage.setItem("rol", data.role);
     if (data.usuario_id) localStorage.setItem("user_id", data.usuario_id);
     return data.access_token;
   }
   throw new Error("Token no recibido");
 }
 
-/*────────────────────────── REGISTER ───────────────────────────*/
+// 2) Registro de usuario
 export async function register({ username, email, password, rol_id = 3 }) {
   const res = await fetch(`${BASE_URL}/usuarios/`, {
     method: "POST",
@@ -59,14 +61,14 @@ export async function register({ username, email, password, rol_id = 3 }) {
   return handleResponse(res);
 }
 
-/*────────────────────────── LOGOUT ──────────────────────────────*/
+// 3) Logout (eliminar datos de sesión)
 export function logout() {
   localStorage.removeItem("token");
   localStorage.removeItem("rol");
   localStorage.removeItem("user_id");
 }
 
-/*─────────────────────── INFO DE USUARIO ───────────────────────*/
+// 4) Extraer rol del token JWT
 export function getUserRole() {
   const token = getToken();
   if (!token) return null;
@@ -78,16 +80,11 @@ export function getUserRole() {
   }
 }
 
-/*─────────────────────── DISPOSITIVOS CRUD ─────────────────────*/
+/*──────────────────────────────── USUARIOS CRUD ─────────────────────────────────*/
 
-// 1) Obtener todos los dispositivos de un usuario concreto
-//    GET /api/v2.2/dispositivos/usuario/{usuario_id}
-export async function getDispositivos() {
-  const usuario_id = localStorage.getItem("user_id");
-  if (!usuario_id) throw new Error("user_id no disponible en localStorage");
-
-  const url = `${BASE_URL}/dispositivos/usuario/${usuario_id}`;
-  const res = await fetch(url, {
+// 1) Obtener todos los usuarios
+export async function getUsers() {
+  const res = await fetch(`${BASE_URL}/usuarios/`, {
     headers: {
       "Content-Type": "application/json",
       ...getAuthHeader(),
@@ -96,11 +93,48 @@ export async function getDispositivos() {
   return handleResponse(res);
 }
 
-// 2) Eliminar un dispositivo por su ID
-//    DELETE /api/v2.2/dispositivos/{dispositivo_id}
-export async function deleteDispositivo(id) {
-  const url = `${BASE_URL}/dispositivos/${id}`;
-  const res = await fetch(url, {
+// 2) Obtener lista de roles
+export async function getRoles() {
+  const res = await fetch(`${BASE_URL}/roles/`, {
+    headers: {
+      "Content-Type": "application/json",
+      ...getAuthHeader(),
+    },
+  });
+  return handleResponse(res);
+}
+
+// 3) Crear un usuario nuevo
+//    Body esperado: { username, email, password, rol_id }
+export async function createUser({ username, email, password, rol_id }) {
+  const res = await fetch(`${BASE_URL}/usuarios/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...getAuthHeader(),
+    },
+    body: JSON.stringify({ username, email, password, rol_id }),
+  });
+  return handleResponse(res);
+}
+
+// 4) Actualizar un usuario existente
+//    Body posible: { username?, email?, password?, rol_id? }
+export async function updateUser(id, payload) {
+  const res = await fetch(`${BASE_URL}/usuarios/${id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      ...getAuthHeader(),
+    },
+    body: JSON.stringify(payload),
+  });
+  return handleResponse(res);
+}
+
+// 5) Eliminar un usuario por ID
+export async function deleteUser(id) {
+  const res = await fetch(`${BASE_URL}/usuarios/${id}`, {
     method: "DELETE",
     headers: {
       ...getAuthHeader(),
@@ -109,23 +143,38 @@ export async function deleteDispositivo(id) {
   return handleResponse(res);
 }
 
-// 3) Crear un dispositivo nuevo
-//    POST /api/v2.2/dispositivos/{id_usuario}
-//    Body (JSON): { mac, nombre, active }
+/*──────────────────────────────── DISPOSITIVOS CRUD ─────────────────────────────────*/
+
+// 1) Obtener los dispositivos de un usuario específico
+export async function getDispositivos() {
+  const usuario_id = localStorage.getItem("user_id");
+  if (!usuario_id) throw new Error("user_id no disponible en localStorage");
+  const res = await fetch(`${BASE_URL}/dispositivos/usuario/${usuario_id}`, {
+    headers: {
+      ...getAuthHeader(),
+    },
+  });
+  return handleResponse(res);
+}
+
+// 2) Eliminar un dispositivo por su ID
+export async function deleteDispositivo(id) {
+  const res = await fetch(`${BASE_URL}/dispositivos/${id}`, {
+    method: "DELETE",
+    headers: {
+      ...getAuthHeader(),
+    },
+  });
+  return handleResponse(res);
+}
+
+// 3) Crear un dispositivo nuevo para el usuario autenticado
+//    Body enviado: { mac, nombre, active }
 export async function createDispositivo({ mac, nombre, active = true }) {
   const usuario_id = localStorage.getItem("user_id");
   if (!usuario_id) throw new Error("user_id no disponible en localStorage");
-
-  const payload = {
-    mac,
-    nombre,
-    active,
-  };
-
-  // Según Swagger: POST /dispositivos/{id_usuario}
-  const url = `${BASE_URL}/dispositivos/${usuario_id}`;
-
-  const res = await fetch(url, {
+  const payload = { mac, nombre, active };
+  const res = await fetch(`${BASE_URL}/dispositivos/${usuario_id}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -133,22 +182,32 @@ export async function createDispositivo({ mac, nombre, active = true }) {
     },
     body: JSON.stringify(payload),
   });
-
   return handleResponse(res);
 }
 
 // 4) Actualizar un dispositivo existente
-//    PATCH /api/v2.2/dispositivos/{dispositivo_id}
-//    Body (JSON): { mac?, nombre?, active? }
+//    Body posible: { mac?, nombre?, active? }
 export async function updateDispositivo(id, payload) {
-  const url = `${BASE_URL}/dispositivos/${id}`;
-  const res = await fetch(url, {
+  const res = await fetch(`${BASE_URL}/dispositivos/${id}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
       ...getAuthHeader(),
     },
     body: JSON.stringify(payload),
+  });
+  return handleResponse(res);
+}
+
+/*──────────────────────────────── REGISTROS (GEOLOCALIZACIÓN) ─────────────────────────────────*/
+
+// 1) Obtener todos los registros de geolocalización
+export async function getRegistros() {
+  const res = await fetch(`${BASE_URL}/registros/`, {
+    headers: {
+      "Content-Type": "application/json",
+      ...getAuthHeader(),
+    },
   });
   return handleResponse(res);
 }

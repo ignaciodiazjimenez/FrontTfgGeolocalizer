@@ -1,11 +1,12 @@
 ---
 import BaseLayout    from "../layouts/BaseLayout.astro";
 import RutaProtegida from "../components/RutaProtegida.jsx";
-
-// Configuramos qué se ve en esta página
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; // <-- o la manera que uses para navegar
+// Opciones del layout:
 const showSidebar  = true;
 const showHeader   = true;
-const showGreeting = true;   // Activamos el saludo
+const showGreeting = true;
 const showFooter   = true;
 ---
 
@@ -15,10 +16,49 @@ const showFooter   = true;
   showGreeting={showGreeting}
   showFooter={showFooter}
 >
-  <!-- RutaProtegida se hidrata en cliente para comprobar token/rol -->
   <RutaProtegida allowedRole="user" redirectTo="/login" client:load>
-    <!-- Justo aquí, por debajo del <Greeting /> del layout, irá el contenido -->
-    <h2 class="text-3xl font-bold">Panel de Cliente</h2>
-    <!-- Resto del contenido del panel... -->
+    <!-- ─── TÍTULO PRINCIPAL ──────────────────────────────────────────── -->
+    <h2 class="text-3xl font-bold mb-6">Tutorial rápido de la App</h2>
+
+    <!-- ─── BLOQUE DE BOTONES ──────────────────────────────────────────── -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
+      <!-- BOTÓN 1: Crear Dispositivo -->
+      <a
+        href="/cliente/dispositivos"
+        class="flex flex-col items-center justify-center p-6 bg-accent-primary hover:bg-accent-hover text-accent-dark rounded-xl shadow-lg transition"
+      >
+        <!-- Icono de “añadir” -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+        </svg>
+        <span class="font-semibold text-lg text-center">Crear nuevo dispositivo</span>
+      </a>
+
+      <!-- BOTÓN 2: Editar/Borrar Dispositivos -->
+      <a
+        href="/cliente/dispositivos"
+        class="flex flex-col items-center justify-center p-6 bg-accent-primary hover:bg-accent-hover text-accent-dark rounded-xl shadow-lg transition"
+      >
+        <!-- Icono de “editar / eliminar” -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 12h4m0 0v8m0-8l-8 8M9 4h6m0 0v6m0-6l-6 6" />
+        </svg>
+        <span class="font-semibold text-lg text-center">Ver / Editar / Borrar</span>
+        <span class="text-sm mt-1">(tus dispositivos)</span>
+      </a>
+
+      <!-- BOTÓN 3: Mapa de Dispositivos -->
+      <a
+        href="/cliente/mapa"
+        class="flex flex-col items-center justify-center p-6 bg-accent-primary hover:bg-accent-hover text-accent-dark rounded-xl shadow-lg transition"
+      >
+        <!-- Icono de “mapa” -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A2 2 0 013 15.382V5.618a2 2 0 011.553-1.94L9 1m6 0l5.447 2.724A2 2 0 0121 5.618v9.764a2 2 0 01-1.553 1.94L15 20m-6 0v-10m6 10V10" />
+        </svg>
+        <span class="font-semibold text-lg text-center">Ver mapa de ubicación</span>
+      </a>
+    </div>
+    <!-- ───────────────────────────────────────────────────────────────────── -->
   </RutaProtegida>
 </BaseLayout>

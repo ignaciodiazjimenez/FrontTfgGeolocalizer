@@ -1,33 +1,44 @@
-import React, { useState } from "react";
+// src/components/Sidebar.jsx
+import React from "react";
 import { getUserRole, logout } from "../utils/api";
 
 export default function Sidebar({ currentPath }) {
-  /* ─── Menús por rol ─── */
-  const role  = getUserRole();            // "user" | "admin"
+  // Obtenemos el rol del usuario autenticado: "user" | "admin" | "root"
+  const role = getUserRole();
+
+  // Definimos los menús para cada rol
   const menus = {
     user: [
-      { label: "Inicio",        to: "/cliente",               icon: "🏠" },
-      { label: "Dispositivos",  to: "/cliente/dispositivos",  icon: "📟" },
-      { label: "Mapa",          to: "/cliente/mapa",          icon: "🗺️" },
+      { label: "Inicio",       to: "/cliente",              icon: "🏠" },
+      { label: "Dispositivos", to: "/cliente/dispositivos", icon: "📟" },
+      { label: "Mapa",         to: "/cliente/mapa",         icon: "🗺️" },
     ],
     admin: [
-      { label: "Inicio",                 to: "/admin",              icon: "🏠" },
-      { label: "Gestionar Clientes",     to: "/admin/clientes",     icon: "👥" },
+      { label: "Inicio",            to: "/admin",              icon: "🏠" },
+      { label: "Gestión Usuarios",  to: "/admin/usuarios",     icon: "👥" },
+      { label: "Dispositivos",      to: "/cliente/dispositivos", icon: "📟" },
+      { label: "Mapa",              to: "/cliente/mapa",         icon: "🗺️" },
+    ],
+    root: [
+      { label: "Inicio",            to: "/admin",              icon: "🏠" },
+      { label: "Gestión Usuarios",  to: "/admin/usuarios",     icon: "👥" },
+      { label: "Dispositivos",      to: "/cliente/dispositivos", icon: "📟" },
+      { label: "Mapa",              to: "/cliente/mapa",         icon: "🗺️" },
     ],
   };
+
+  // Seleccionamos el array de items según el rol actual
   const menuItems = menus[role] ?? [];
 
-  /* ─── logout ─── */
+  // Función de logout
   const handleLogout = () => {
     logout();
     window.location.href = "/";
   };
 
-  /* ─── render ─── */
   return (
-    /* “group” nos permite usar group-hover en hijos */
     <div className="group/sidebar fixed inset-y-0 left-0 z-30">
-      {/* --- Botón hamburguesa (solo visible < md) ------------------ */}
+      {/* Botón hamburguesa (visible solo en pantallas < md) */}
       <button
         onClick={() =>
           document
@@ -36,17 +47,15 @@ export default function Sidebar({ currentPath }) {
         }
         className="
           md:hidden absolute top-4 left-4 z-40
-          p-2 rounded-md bg-primary-light/70 backdrop-blur
+          p-2 rounded-md bg-accent-primary/70 dark:bg-accent-primary/70 backdrop-blur
         "
       >
         ☰
       </button>
 
-      {/* --- Drawer -------------------------------------------------- */}
+      {/* Drawer */}
       <aside
         id="drawer"
-        /*  ➜  desktop: queda 12 px dentro de la pantalla  
-            ➜  <md  : fuera, se muestra solo con el botón          */
         className="
           h-full w-56
           -translate-x-[calc(100%-12px)] md:-translate-x-3
@@ -55,13 +64,18 @@ export default function Sidebar({ currentPath }) {
           transition-transform duration-300
           flex flex-col justify-between
           px-5 py-8
-          bg-primary-light/80 dark:bg-accent-dark/60 backdrop-blur-md
-          border-r border-white/30 dark:border-accent-dark/30 shadow-lg
+          bg-gradient-to-b from-accent-primary via-primary-light to-accent-primary
+          dark:bg-gradient-to-b dark:from-accent-primary dark:via-accent-primary dark:to-primary-dark
+          backdrop-blur-md
+          border-r border-white/30 dark:border-accent-dark/30
+          shadow-lg
         "
       >
-        {/* Menú ---------------------------------------------------- */}
+        {/* Menú principal */}
         <div className="space-y-8">
-          <h2 className="text-xl font-extrabold tracking-wide">Menú</h2>
+          <h2 className="text-xl font-extrabold tracking-wide text-accent-dark dark:text-white">
+            Menú
+          </h2>
 
           <ul className="space-y-1.5">
             {menuItems.map(({ label, to, icon }) => {
@@ -72,11 +86,10 @@ export default function Sidebar({ currentPath }) {
                     href={to}
                     className={`
                       flex items-center gap-3
-                      px-4 py-2 rounded-lg font-medium
-                      transition-colors
+                      px-4 py-2 rounded-lg font-medium transition-colors
                       ${active
-                        ? "bg-accent-primary text-accent-dark shadow"
-                        : "hover:bg-accent-primary/30"}
+                        ? "bg-white/30 text-accent-dark dark:text-accent-dark shadow-md"
+                        : "hover:bg-accent-primary/30 text-accent-dark dark:text-white"}
                     `}
                   >
                     <span>{icon}</span>
@@ -88,7 +101,7 @@ export default function Sidebar({ currentPath }) {
           </ul>
         </div>
 
-        {/* Logout --------------------------------------------------- */}
+        {/* Botón de cerrar sesión */}
         <button
           onClick={handleLogout}
           className="
