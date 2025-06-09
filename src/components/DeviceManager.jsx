@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
-  getAllDispositivos,
+  getDispositivosUsuario,
   deleteDispositivo,
   createDispositivo,
   updateDispositivo,
@@ -24,7 +24,11 @@ export default function DeviceManager() {
   const fetchDispositivos = async () => {
     setLoading(true);
     try {
-      const data = await getAllDispositivos();
+      const usuarioId = localStorage.getItem("user_id");
+      if (!usuarioId) {
+        throw new Error("Usuario no autenticado");
+      }
+      const data = await getDispositivosUsuario(usuarioId);
       setDispositivos(data || []);
       setError("");
     } catch (err) {
