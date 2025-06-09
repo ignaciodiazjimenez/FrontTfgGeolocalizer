@@ -1,15 +1,13 @@
 ---
-import BaseLayout     from "../../layouts/BaseLayout.astro";
-import RutaProtegida   from "../../components/RutaProtegida.jsx";
-import DeviceManager   from "../../components/DeviceManager.jsx";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import RutaProtegida from "../../components/RutaProtegida.jsx";
+import DeviceManager from "../../components/DeviceManager.jsx";
 
-// Opciones para el layout
-const showSidebar   = true;
-const showHeader    = true;
-const showGreeting  = false;
-const showFooter    = true;
+const showSidebar  = true;
+const showHeader   = true;
+const showGreeting = false;
+const showFooter   = true;
 
-// Permitir tanto “user” **como** “admin”
 const allowedRole = ["user", "admin", "root"];
 const redirectTo  = "/login";
 ---
@@ -20,11 +18,7 @@ const redirectTo  = "/login";
   showGreeting={showGreeting}
   showFooter={showFooter}
 >
-  <RutaProtegida
-    client:load
-    allowedRole={allowedRole}
-    redirectTo={redirectTo}
-  >
+  <RutaProtegida client:load allowedRole={allowedRole} redirectTo={redirectTo}>
     <DeviceManager client:load />
   </RutaProtegida>
 </BaseLayout>

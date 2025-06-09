@@ -1,11 +1,15 @@
 // src/utils/api.js
 // ────────────────────────────────────────────────────────────────────────────
-// Asegúrate de que en tu `.env` esté:
-//   PUBLIC_API_URL=http://127.0.0.1:8000/api/v2.2
+// Asegúrate de que en tu archivo `.env` tengas algo como:
+//   PUBLIC_API_URL=http://127.0.0.1:8000/api/v2.3
+//
+// De este modo, todos los endpoints apuntarán a /api/v2.3/usuarios, /api/v2.3/dispositivos, /api/v2.3/registros, etc.
+// Si faltase .env, se usará por defecto "http://127.0.0.1:8000/api/v2.3".
+// ────────────────────────────────────────────────────────────────────────────
 
 const BASE_URL =
   import.meta.env.PUBLIC_API_URL?.trim().replace(/\/$/, "") ||
-  "http://127.0.0.1:8000/api/v2.2";
+  "http://127.0.0.1:8000/api/v2.3";
 
 export function getToken() {
   if (typeof window === "undefined") return null;
@@ -30,9 +34,11 @@ async function handleResponse(res) {
   return text ? JSON.parse(text) : {};
 }
 
-/*──────────────────────────────── LOGIN / REGISTER / LOGOUT ─────────────────────────────────*/
+/*──────────────────────────────────────────────────────────────────────────────
+  LOGIN / REGISTER / LOGOUT
+───────────────────────────────────────────────────────────────────────────────*/
 
-// 1) Login por username
+// 1) Login por username (token_username)
 export async function login(username, password) {
   const res = await fetch(`${BASE_URL}/token_username`, {
     method: "POST",
@@ -40,18 +46,34 @@ export async function login(username, password) {
     body: JSON.stringify({ username, password }),
   });
   const data = await handleResponse(res);
-
-  // Payload de ejemplo: { access_token, token_type:"bearer", role:"user", usuario_id: 3 }
+  // Ejemplo de payload: { access_token, token_type:"bearer", role:"user", usuario_id: 3 }
   if (data.access_token) {
     localStorage.setItem("token", data.access_token);
-    if (data.role)       localStorage.setItem("rol", data.role);
+    if (data.role) localStorage.setItem("rol", data.role);
     if (data.usuario_id) localStorage.setItem("user_id", data.usuario_id);
     return data.access_token;
   }
   throw new Error("Token no recibido");
 }
 
-// 2) Registro de usuario
+// 2) Login por email (token_email)
+export async function loginConEmail(email, password) {
+  const res = await fetch(`${BASE_URL}/token_email`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
+  const data = await handleResponse(res);
+  if (data.access_token) {
+    localStorage.setItem("token", data.access_token);
+    if (data.role) localStorage.setItem("rol", data.role);
+    if (data.usuario_id) localStorage.setItem("user_id", data.usuario_id);
+    return data.access_token;
+  }
+  throw new Error("Token no recibido");
+}
+
+// 3) Registro de usuario (por defecto rol_id = 3 = “user”)
 export async function register({ username, email, password, rol_id = 3 }) {
   const res = await fetch(`${BASE_URL}/usuarios/`, {
     method: "POST",
@@ -61,14 +83,14 @@ export async function register({ username, email, password, rol_id = 3 }) {
   return handleResponse(res);
 }
 
-// 3) Logout (eliminar datos de sesión)
+// 4) Logout: borramos token, rol y user_id del localStorage
 export function logout() {
   localStorage.removeItem("token");
   localStorage.removeItem("rol");
   localStorage.removeItem("user_id");
 }
 
-// 4) Extraer rol del token JWT
+// 5) Extraer rol del token JWT (decodificándolo)
 export function getUserRole() {
   const token = getToken();
   if (!token) return null;
@@ -80,7 +102,15 @@ export function getUserRole() {
   }
 }
 
-/*──────────────────────────────── USUARIOS CRUD ─────────────────────────────────*/
+// 6) Extraer user_id del localStorage
+export function getUserId() {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("user_id");
+}
+
+/*──────────────────────────────────────────────────────────────────────────────
+  USUARIOS CRUD
+───────────────────────────────────────────────────────────────────────────────*/
 
 // 1) Obtener todos los usuarios
 export async function getUsers() {
@@ -93,9 +123,9 @@ export async function getUsers() {
   return handleResponse(res);
 }
 
-// 2) Obtener lista de roles
-export async function getRoles() {
-  const res = await fetch(`${BASE_URL}/roles/`, {
+// 2) Obtener un usuario por ID
+export async function getUserById(id) {
+  const res = await fetch(`${BASE_URL}/usuarios/${id}`, {
     headers: {
       "Content-Type": "application/json",
       ...getAuthHeader(),
@@ -105,7 +135,7 @@ export async function getRoles() {
 }
 
 // 3) Crear un usuario nuevo
-//    Body esperado: { username, email, password, rol_id }
+//    Body: { username, email, password, rol_id }
 export async function createUser({ username, email, password, rol_id }) {
   const res = await fetch(`${BASE_URL}/usuarios/`, {
     method: "POST",
@@ -119,7 +149,7 @@ export async function createUser({ username, email, password, rol_id }) {
 }
 
 // 4) Actualizar un usuario existente
-//    Body posible: { username?, email?, password?, rol_id? }
+//    Body: { username?, email?, password?, rol_id? }
 export async function updateUser(id, payload) {
   const res = await fetch(`${BASE_URL}/usuarios/${id}`, {
     method: "PATCH",
@@ -143,12 +173,66 @@ export async function deleteUser(id) {
   return handleResponse(res);
 }
 
-/*──────────────────────────────── DISPOSITIVOS CRUD ─────────────────────────────────*/
+// 6) Pedir cambio de contraseña (request password reset)
+//    Endpoint: POST /usuarios/cambiar_contrasena/{usuario_id}
+export async function pedirCambioContrasena(usuario_id) {
+  const res = await fetch(`${BASE_URL}/usuarios/cambiar_contrasena/${usuario_id}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...getAuthHeader() },
+  });
+  return handleResponse(res);
+}
 
-// 1) Obtener los dispositivos de un usuario específico
-export async function getDispositivos() {
-  const usuario_id = localStorage.getItem("user_id");
-  if (!usuario_id) throw new Error("user_id no disponible en localStorage");
+// 7) Cambiar contraseña con token recibido
+//    Endpoint: POST /usuarios/cambiar_contrasena/{usuario_id}/{token}
+export async function cambiarContrasena(usuario_id, token, nuevaPassword) {
+  const res = await fetch(
+    `${BASE_URL}/usuarios/cambiar_contrasena/${usuario_id}/${token}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: nuevaPassword }),
+    }
+  );
+  return handleResponse(res);
+}
+
+/*──────────────────────────────────────────────────────────────────────────────
+  ROLES
+───────────────────────────────────────────────────────────────────────────────*/
+
+// 1) Obtener lista de roles
+export async function getRoles() {
+  const res = await fetch(`${BASE_URL}/roles/`, {
+    headers: {
+      "Content-Type": "application/json",
+      ...getAuthHeader(),
+    },
+  });
+  return handleResponse(res);
+}
+
+/*──────────────────────────────────────────────────────────────────────────────
+  DISPOSITIVOS CRUD
+───────────────────────────────────────────────────────────────────────────────*/
+
+// 1) Obtener todos los dispositivos (general)
+//    Nota: este endpoint devolverá **todos** los dispositivos si el backend
+//    lo permite al rol admin/root, en caso contrario devolverá solo los del
+//    usuario autenticado (en algunos backends se filtra automáticamente).
+//    Endpoint: GET /dispositivos
+export async function getAllDispositivos() {
+  const res = await fetch(`${BASE_URL}/dispositivos/`, {
+    headers: {
+      ...getAuthHeader(),
+    },
+  });
+  return handleResponse(res);
+}
+
+// 2) Obtener dispositivos de un usuario específico
+//    Endpoint: GET /dispositivos/usuario/{usuario_id}
+export async function getDispositivosUsuario(usuario_id) {
   const res = await fetch(`${BASE_URL}/dispositivos/usuario/${usuario_id}`, {
     headers: {
       ...getAuthHeader(),
@@ -157,51 +241,83 @@ export async function getDispositivos() {
   return handleResponse(res);
 }
 
-// 2) Eliminar un dispositivo por su ID
-export async function deleteDispositivo(id) {
+// 3) Obtener un dispositivo por su ID
+//    Endpoint: GET /dispositivos/{dispositivo_id}
+export async function getDispositivoById(id) {
   const res = await fetch(`${BASE_URL}/dispositivos/${id}`, {
-    method: "DELETE",
-    headers: {
-      ...getAuthHeader(),
-    },
+    headers: { ...getAuthHeader() },
   });
   return handleResponse(res);
 }
 
-// 3) Crear un dispositivo nuevo para el usuario autenticado
-//    Body enviado: { mac, nombre, active }
-export async function createDispositivo({ mac, nombre, active = true }) {
-  const usuario_id = localStorage.getItem("user_id");
-  if (!usuario_id) throw new Error("user_id no disponible en localStorage");
-  const payload = { mac, nombre, active };
-  const res = await fetch(`${BASE_URL}/dispositivos/${usuario_id}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...getAuthHeader(),
-    },
-    body: JSON.stringify(payload),
-  });
+// 4) Crear un dispositivo nuevo para un usuario determinado
+//    Endpoint: POST /dispositivos/{usuario_id}
+//    Body: { mac, nombre, active }
+//    - Si el rol es “user”, siempre usaremos el propio user_id del localStorage.
+//    - Si el rol es “admin/root”, el formulario deberá enviar “usuario_id” explícito.
+export async function createDispositivo(data) {
+  // Determinar ID de usuario
+  const usuarioId = data.usuario_id || getUserId();
+  if (!usuarioId) {
+    throw new Error("No se pudo determinar el usuario para crear el dispositivo");
+  }
+
+  const res = await fetch(
+    `${BASE_URL}/dispositivos/${usuarioId}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeader(),
+      },
+      body: JSON.stringify({
+        mac: data.mac,
+        nombre: data.nombre,
+        active: data.active,
+      }),
+    }
+  );
+
   return handleResponse(res);
 }
 
-// 4) Actualizar un dispositivo existente
-//    Body posible: { mac?, nombre?, active? }
+// 5) Actualizar un dispositivo existente
+//    Endpoint: PATCH /dispositivos/{dispositivo_id}
+//    Body: { mac?, nombre?, active? }
 export async function updateDispositivo(id, payload) {
   const res = await fetch(`${BASE_URL}/dispositivos/${id}`, {
     method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      ...getAuthHeader(),
-    },
+    headers: { "Content-Type": "application/json", ...getAuthHeader() },
     body: JSON.stringify(payload),
   });
   return handleResponse(res);
 }
 
-/*──────────────────────────────── REGISTROS (GEOLOCALIZACIÓN) ─────────────────────────────────*/
+// 6) Eliminar un dispositivo por su ID
+//    Endpoint: DELETE /dispositivos/{dispositivo_id}
+export async function deleteDispositivo(id) {
+  const res = await fetch(`${BASE_URL}/dispositivos/${id}`, {
+    method: "DELETE",
+    headers: { ...getAuthHeader() },
+  });
+  return handleResponse(res);
+}
+
+// 7) Obtener dispositivos junto con sus registros
+//    Endpoint: GET /dispositivos/registros/{id_dispositivo}
+export async function getDispositivoConRegistros(dispositivo_id) {
+  const res = await fetch(`${BASE_URL}/dispositivos/registros/${dispositivo_id}`, {
+    headers: { ...getAuthHeader() },
+  });
+  return handleResponse(res);
+}
+
+/*──────────────────────────────────────────────────────────────────────────────
+  REGISTROS (GEOLOCALIZACIÓN)
+───────────────────────────────────────────────────────────────────────────────*/
 
 // 1) Obtener todos los registros de geolocalización
+//    Endpoint: GET /registros/
 export async function getRegistros() {
   const res = await fetch(`${BASE_URL}/registros/`, {
     headers: {
@@ -211,3 +327,23 @@ export async function getRegistros() {
   });
   return handleResponse(res);
 }
+
+// 2) Crear un nuevo registro de geolocalización
+//    Endpoint: POST /registros/
+//    Body de ejemplo: { fecha, coordenadas: "lat,lng", mac }
+export async function createRegistro({ fecha, coordenadas, mac }) {
+  const res = await fetch(`${BASE_URL}/registros/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...getAuthHeader(),
+    },
+    body: JSON.stringify({ fecha, coordenadas, mac }),
+  });
+  return handleResponse(res);
+}
+
+// 3) (Opcional) Obtener registros de un dispositivo concreto
+//    Endpoint: GET /dispositivos/registros/{id_dispositivo}
+//    Ya lo cubre getDispositivoConRegistros()
+// ──────────────────────────────────────────────────────────────────────────────

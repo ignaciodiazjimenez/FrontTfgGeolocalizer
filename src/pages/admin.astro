@@ -15,5 +15,112 @@ const showFooter   = true;
   showGreeting={showGreeting}
   showFooter={showFooter}
 >
-  <RutaProtegida />
+  <!-- ─── TÍTULO PRINCIPAL ──────────────────────────────────────────── -->
+  <h2 class="text-3xl font-bold mb-6">Tutorial rápido de la App</h2>
+
+  <!-- ─── BLOQUE DE BOTONES ──────────────────────────────────────────── -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-4xl mx-auto">
+    <!-- BOTÓN 1: Crear Dispositivo -->
+    <a
+      href="/cliente/dispositivos"
+      class="group relative block w-full h-48 rounded-xl overflow-visible"
+    >
+      <!-- Glow + blur on hover -->
+      <span
+        class="pointer-events-none absolute inset-0 rounded-xl bg-accent-primary opacity-0 transition-opacity duration-300 group-hover:opacity-20 group-hover:blur-md"
+      />
+      <!-- Ping on hover -->
+      <span
+        class="pointer-events-none absolute inset-0 rounded-xl border-2 border-accent-primary opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-hover:animate-ping"
+      />
+      <!-- Contenido -->
+      <div
+        class="relative flex flex-col items-center justify-center w-full h-full p-6 bg-accent-primary hover:bg-accent-hover text-accent-dark rounded-xl shadow-lg transition"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-10 w-10 mb-3"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+        </svg>
+        <span class="font-semibold text-lg text-center">
+          Crear nuevo dispositivo
+        </span>
+      </div>
+    </a>
+
+    <!-- BOTÓN 2: Ver / Editar / Borrar -->
+    <a
+      href="/cliente/dispositivos"
+      class="group relative block w-full h-48 rounded-xl overflow-visible"
+    >
+      <span
+        class="pointer-events-none absolute inset-0 rounded-xl bg-accent-primary opacity-0 transition-opacity duration-300 group-hover:opacity-20 group-hover:blur-md"
+      />
+      <span
+        class="pointer-events-none absolute inset-0 rounded-xl border-2 border-accent-primary opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-hover:animate-ping"
+      />
+      <div
+        class="relative flex flex-col items-center justify-center w-full h-full p-6 bg-accent-primary hover:bg-accent-hover text-accent-dark rounded-xl shadow-lg transition"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-10 w-10 mb-3"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M15 12h4m0 0v8m0-8l-8 8M9 4h6m0 0v6m0-6l-6 6"
+          />
+        </svg>
+        <span class="font-semibold text-lg text-center">
+          Ver / Editar / Borrar
+        </span>
+        <span class="text-sm mt-1">(tus dispositivos)</span>
+      </div>
+    </a>
+
+    <!-- BOTÓN 3: Ver mapa de ubicación -->
+    <a
+      href="/cliente/mapa"
+      class="group relative block w-full h-48 rounded-xl overflow-visible"
+    >
+      <span
+        class="pointer-events-none absolute inset-0 rounded-xl bg-accent-primary opacity-0 transition-opacity duration-300 group-hover:opacity-20 group-hover:blur-md"
+      />
+      <span
+        class="pointer-events-none absolute inset-0 rounded-xl border-2 border-accent-primary opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-hover:animate-ping"
+      />
+      <div
+        class="relative flex flex-col items-center justify-center w-full h-full p-6 bg-accent-primary hover:bg-accent-hover text-accent-dark rounded-xl shadow-lg transition"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-10 w-10 mb-3"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M9 20l-5.447-2.724A2 2 0 013 15.382V5.618a2 2 0 011.553-1.94L9 1m6 0l5.447 2.724A2 2 0 0121 5.618v9.764a2 2 0 01-1.553 1.94L15 20m-6 0v-10m6 10V10"
+          />
+        </svg>
+        <span class="font-semibold text-lg text-center">
+          Ver mapa de ubicación
+        </span>
+      </div>
+    </a>
+  </div>
+  <!-- ───────────────────────────────────────────────────────────────────── -->
 </BaseLayout>

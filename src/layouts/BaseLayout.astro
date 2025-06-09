@@ -6,7 +6,6 @@ import Greeting from "../components/Greeting.jsx";
 import Footer   from "../components/Footer.jsx";
 
 const {
-  children,
   showSidebar  = true,
   showHeader   = true,
   showGreeting = true,
@@ -15,34 +14,52 @@ const {
 
 const currentPath = Astro.url.pathname;
 ---
-
 <!DOCTYPE html>
 <html lang="es" class="h-full">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Geolocalizer</title>
+    <!-- Script pre-CSS para inicializar dark/light -->
+    <script>
+      (function() {
+        const stored = localStorage.getItem('theme');
+        const prefers = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (stored === 'dark' || (!stored && prefers)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
   </head>
   <body
-    class="
-      flex flex-col min-h-screen
-      font-sans antialiased
-      bg-gradient-to-b from-primary-light to-primary-dark
-      text-accent-dark
-    "
-  >
-    {showSidebar && <Sidebar currentPath={currentPath} client:load />}
+  class="
+    h-full min-h-screen
+    bg-fixed bg-gradient-to-b from-primary-light to-primary-dark
+    dark:bg-fixed dark:bg-gradient-to-b dark:from-primary-dark dark:to-primary-light
+    text-accent-dark dark:text-white
+    overflow-x-hidden overflow-y-auto
+  "
+>
 
-    <div class={`flex flex-col flex-1 transition-all ${showSidebar ? "ml-52" : ""}`}>
-      {showHeader && <Header client:load />}
+    <div class="flex flex-col md:flex-row min-h-screen">
+      {showSidebar && (
+        <aside class="h-full">
+          <Sidebar currentPath={currentPath} client:load />
+        </aside>
+      )}
 
-      <main class="flex-grow flex flex-col items-center justify-start py-20">
-        {showGreeting && <Greeting client:load />}
+      <div class={`flex flex-col flex-1 transition-all min-h-screen ${
+        showSidebar ? "ml-52" : ""
+      }`}>
+        {showHeader && <Header client:load />}
 
-        <slot />
-      </main>
+        <main class="flex-1 flex flex-col items-center justify-start py-20">
+          {showGreeting && <Greeting client:load />}
+          <slot />
+        </main>
 
-      {showFooter && <Footer client:load />}
+        {showFooter && <Footer client:load />}
+      </div>
     </div>
   </body>
 </html>

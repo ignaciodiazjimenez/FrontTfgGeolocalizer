@@ -1,7 +1,6 @@
-// src/components/DeviceManager.jsx
 import React, { useState, useEffect } from "react";
 import {
-  getDispositivos,
+  getAllDispositivos,
   deleteDispositivo,
   createDispositivo,
   updateDispositivo,
@@ -21,14 +20,11 @@ export default function DeviceManager() {
   const [searchName, setSearchName] = useState("");
   const [searchMac, setSearchMac] = useState("");
 
-  useEffect(() => {
-    fetchDispositivos();
-  }, []);
-
+  // Carga inicial y recargas
   const fetchDispositivos = async () => {
     setLoading(true);
     try {
-      const data = await getDispositivos();
+      const data = await getAllDispositivos();
       setDispositivos(data || []);
       setError("");
     } catch (err) {
@@ -38,6 +34,10 @@ export default function DeviceManager() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchDispositivos();
+  }, []);
 
   const handleDelete = async (id) => {
     if (!window.confirm("¿Seguro que quieres eliminar este dispositivo?")) return;
@@ -58,17 +58,19 @@ export default function DeviceManager() {
 
   const openEditForm = (device) => {
     setIsEditing(true);
-    setCurrentDevice(device);
+    setCurrentDevice({ ...device });
     setShowForm(true);
   };
 
   const handleFormSubmit = async (formData) => {
     try {
       if (isEditing && currentDevice) {
-        // EDITAR
-        await updateDispositivo(currentDevice.id, formData);
+        await updateDispositivo(currentDevice.id, {
+          mac: formData.mac,
+          nombre: formData.nombre,
+          active: formData.active,
+        });
       } else {
-        // CREAR
         await createDispositivo({
           mac: formData.mac,
           nombre: formData.nombre,
@@ -77,15 +79,17 @@ export default function DeviceManager() {
       }
       await fetchDispositivos();
       setShowForm(false);
+      setCurrentDevice(null);
     } catch (err) {
       console.error(err);
-      alert("Error al guardar en la API.");
+      throw err;
     }
   };
 
-  const handleCancelForm = () => {
+  const handleCancelForm = async () => {
     setShowForm(false);
     setCurrentDevice(null);
+    await fetchDispositivos();
   };
 
   // Filtrar dispositivos según buscadores
@@ -99,12 +103,10 @@ export default function DeviceManager() {
 
   return (
     <div className="flex flex-col items-center w-full px-4 md:px-8 lg:px-16 py-6">
-      <div className="w-full max-w-4xl bg-white/20 backdrop-blur-md rounded-xl border border-white/40 shadow-xl p-6 space-y-6">
-        {/* Encabezado con título ligeramente más oscuro y campos de búsqueda */}
+      <div className="w-full max-w-5xl bg-white/20 backdrop-blur-md rounded-xl border border-white/40 shadow-xl p-6 space-y-6">
+        {/* Encabezado con título y campos de búsqueda */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
-          <h2 className="text-3xl font-bold text-[#2F3E2E]">
-            Gestión de Dispositivos
-          </h2>
+          <h2 className="text-3xl font-bold text-[#2F3E2E]">Gestión de Dispositivos</h2>
           <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2">
             <input
               type="text"
@@ -121,6 +123,7 @@ export default function DeviceManager() {
               className="px-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-accent-primary text-gray-800 w-full sm:w-48"
             />
             <button
+              type="button"
               onClick={openCreateForm}
               className="flex items-center space-x-1 bg-accent-primary hover:bg-accent-hover px-4 py-2 rounded-md text-black transition-colors"
             >
@@ -159,18 +162,14 @@ export default function DeviceManager() {
                       <td className="p-3 text-gray-900">{device.nombre}</td>
                       <td className="p-3 text-gray-900">
                         {device.active ? (
-                          <span className="inline-block px-2 py-0.5 bg-green-200 text-green-800 text-sm rounded-full">
-                            Sí
-                          </span>
+                          <span className="inline-block px-2 py-0.5 bg-green-200 text-green-800 text-sm rounded-full">Sí</span>
                         ) : (
-                          <span className="inline-block px-2 py-0.5 bg-red-200 text-red-800 text-sm rounded-full">
-                            No
-                          </span>
+                          <span className="inline-block px-2 py-0.5 bg-red-200 text-red-800 text-sm rounded-full">No</span>
                         )}
                       </td>
                       <td className="p-3 flex justify-center space-x-4">
-                        {/* Botón editar con lápiz negro */}
                         <button
+                          type="button"
                           onClick={() => openEditForm(device)}
                           title="Editar dispositivo"
                           className="text-black hover:text-gray-700 transition-colors"
@@ -190,9 +189,8 @@ export default function DeviceManager() {
                             />
                           </svg>
                         </button>
-
-                        {/* Botón eliminar */}
                         <button
+                          type="button"
                           onClick={() => handleDelete(device.id)}
                           title="Eliminar dispositivo"
                           className="text-red-600 hover:text-red-400 transition-colors"
@@ -221,7 +219,7 @@ export default function DeviceManager() {
           )}
         </div>
 
-        {/* Si showForm === true, mostramos DeviceForm */}
+        {/* Modal para crear/editar dispositivo */}
         {showForm && (
           <div className="mt-6">
             <DeviceForm

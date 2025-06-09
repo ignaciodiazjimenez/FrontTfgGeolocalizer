@@ -1,19 +1,25 @@
 ---
-// src/pages/admin/usuarios.astro
-import UserManager from "../../components/UserManager.jsx";
-import Sidebar from "../../components/Sidebar.jsx";
-import { Fragment } from "react";
-const currentPath = "/admin/usuarios";
+import BaseLayout    from "../../layouts/BaseLayout.astro";
+import RutaProtegida from "../../components/RutaProtegida.jsx";
+import UserManager   from "../../components/UserManager.jsx";
+
+const showSidebar  = true;
+const showHeader   = true;
+const showGreeting = false;
+const showFooter   = true;
+
+// Sólo “admin” y “root” pueden acceder
+const allowedRole = ["admin", "root"];
+const redirectTo  = "/login";
 ---
-<html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Gestión de Usuarios</title>
-  </head>
-  <body class="bg-green-100 min-h-screen">
-    <Sidebar client:load currentPath={currentPath} />
-    <main class="ml-0 md:ml-56 p-4">
-      <UserManager client:load />
-    </main>
-  </body>
-</html>
+
+<BaseLayout
+  showSidebar={showSidebar}
+  showHeader={showHeader}
+  showGreeting={showGreeting}
+  showFooter={showFooter}
+>
+  <RutaProtegida client:load allowedRole={allowedRole} redirectTo={redirectTo}>
+    <UserManager client:load />
+  </RutaProtegida>
+</BaseLayout>
