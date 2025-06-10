@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { recoverPassword, verifyUserEmail } from "../utils/api"; // Asumiendo que agregas un endpoint para verificación
+import { recoverPassword } from "../utils/api"; // Asumiendo que agregas un endpoint para verificación
 
 export default function Recuperar() {
   const [step, setStep] = useState(1);
