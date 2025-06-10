@@ -6,6 +6,7 @@ const showSidebar  = true;
 const showHeader   = true;
 const showGreeting = true;
 const showFooter   = true;
+const allowedRole = ["admin", "root", "user"];
 ---
 
 <BaseLayout
@@ -14,7 +15,7 @@ const showFooter   = true;
   showGreeting={showGreeting}
   showFooter={showFooter}
 >
-  <RutaProtegida allowedRole="user" redirectTo="/login" client:load>
+  <RutaProtegida allowedRole={allowedRole} redirectTo="/login" client:load>
     <!-- ─── TÍTULO PRINCIPAL ──────────────────────────────────────────── -->
     <h2 class="text-3xl font-bold mb-6">Tutorial rápido de la App</h2>
 
