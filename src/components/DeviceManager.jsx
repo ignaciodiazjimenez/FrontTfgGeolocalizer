@@ -6,28 +6,34 @@ import {
   updateDispositivo,
 } from "../utils/api.js";
 import DeviceForm from "./DeviceForm.jsx";
+import ConfirmModal from "./ConfirmModal.jsx";
 
 export default function DeviceManager() {
+  // ------------------ Estados principales ------------------
   const [dispositivos, setDispositivos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Modal de creación / edición
   const [showForm, setShowForm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [currentDevice, setCurrentDevice] = useState(null);
 
-  // Estados para los filtros de búsqueda
+  // Búsqueda
   const [searchName, setSearchName] = useState("");
   const [searchMac, setSearchMac] = useState("");
 
-  // Carga inicial y recargas
+  // Modal de confirmación de borrado
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [deviceToDelete, setDeviceToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+
+  // ------------------ Carga de dispositivos ------------------
   const fetchDispositivos = async () => {
     setLoading(true);
     try {
       const usuarioId = localStorage.getItem("user_id");
-      if (!usuarioId) {
-        throw new Error("Usuario no autenticado");
-      }
+      if (!usuarioId) throw new Error("Usuario no autenticado");
       const data = await getDispositivosUsuario(usuarioId);
       setDispositivos(data || []);
       setError("");
@@ -43,17 +49,7 @@ export default function DeviceManager() {
     fetchDispositivos();
   }, []);
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("¿Seguro que quieres eliminar este dispositivo?")) return;
-    try {
-      await deleteDispositivo(id);
-      setDispositivos((prev) => prev.filter((d) => d.id !== id));
-    } catch (err) {
-      console.error(err);
-      alert("Error al borrar el dispositivo.");
-    }
-  };
-
+  // ------------------ Crear / Editar ------------------
   const openCreateForm = () => {
     setIsEditing(false);
     setCurrentDevice({ mac: "", nombre: "", active: true });
@@ -96,7 +92,35 @@ export default function DeviceManager() {
     await fetchDispositivos();
   };
 
-  // Filtrar dispositivos según buscadores
+  // ------------------ Borrado con confirmación ------------------
+  const openDeleteConfirm = (device) => {
+    setDeviceToDelete(device);
+    setShowConfirm(true);
+  };
+
+  const closeDeleteConfirm = () => {
+    setShowConfirm(false);
+    setDeviceToDelete(null);
+  };
+
+  const confirmDelete = async () => {
+    if (!deviceToDelete) return;
+    setDeleting(true);
+    try {
+      await deleteDispositivo(deviceToDelete.id);
+      setDispositivos((prev) =>
+        prev.filter((d) => d.id !== deviceToDelete.id)
+      );
+    } catch (err) {
+      console.error(err);
+      alert("Error al borrar el dispositivo."); // podrías cambiarlo por un toast
+    } finally {
+      setDeleting(false);
+      closeDeleteConfirm();
+    }
+  };
+
+  // ------------------ Filtrado ------------------
   const filteredDispositivos = dispositivos.filter((device) => {
     const matchesName = device.nombre
       .toLowerCase()
@@ -105,12 +129,15 @@ export default function DeviceManager() {
     return matchesName && matchesMac;
   });
 
+  // ------------------ Render ------------------
   return (
     <div className="flex flex-col items-center w-full px-4 md:px-8 lg:px-16 py-6">
       <div className="w-full max-w-5xl bg-white/20 backdrop-blur-md rounded-xl border border-white/40 shadow-xl p-6 space-y-6">
-        {/* Encabezado con título y campos de búsqueda */}
+        {/* Encabezado */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
-          <h2 className="text-3xl font-bold text-[#2F3E2E]">Gestión de Dispositivos</h2>
+          <h2 className="text-3xl font-bold text-[#2F3E2E]">
+            Gestión de Dispositivos
+          </h2>
           <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2">
             <input
               type="text"
@@ -137,23 +164,33 @@ export default function DeviceManager() {
           </div>
         </div>
 
-        {/* Contenido principal: tabla o mensajes */}
+        {/* Contenido principal */}
         <div>
           {loading ? (
             <p className="text-center text-gray-700">Cargando dispositivos...</p>
           ) : error ? (
             <p className="text-center text-red-600">{error}</p>
           ) : filteredDispositivos.length === 0 ? (
-            <p className="text-center text-gray-700">No hay dispositivos para mostrar.</p>
+            <p className="text-center text-gray-700">
+              No hay dispositivos para mostrar.
+            </p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full table-auto border-collapse">
                 <thead>
                   <tr className="bg-accent-primary/80">
-                    <th className="p-3 text-left text-white font-semibold">MAC</th>
-                    <th className="p-3 text-left text-white font-semibold">Nombre</th>
-                    <th className="p-3 text-left text-white font-semibold">Funcionando</th>
-                    <th className="p-3 text-center text-white font-semibold">Acciones</th>
+                    <th className="p-3 text-left text-white font-semibold">
+                      MAC
+                    </th>
+                    <th className="p-3 text-left text-white font-semibold">
+                      Nombre
+                    </th>
+                    <th className="p-3 text-left text-white font-semibold">
+                      Funcionando
+                    </th>
+                    <th className="p-3 text-center text-white font-semibold">
+                      Acciones
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -166,12 +203,17 @@ export default function DeviceManager() {
                       <td className="p-3 text-gray-900">{device.nombre}</td>
                       <td className="p-3 text-gray-900">
                         {device.active ? (
-                          <span className="inline-block px-2 py-0.5 bg-green-200 text-green-800 text-sm rounded-full">Sí</span>
+                          <span className="inline-block px-2 py-0.5 bg-green-200 text-green-800 text-sm rounded-full">
+                            Sí
+                          </span>
                         ) : (
-                          <span className="inline-block px-2 py-0.5 bg-red-200 text-red-800 text-sm rounded-full">No</span>
+                          <span className="inline-block px-2 py-0.5 bg-red-200 text-red-800 text-sm rounded-full">
+                            No
+                          </span>
                         )}
                       </td>
                       <td className="p-3 flex justify-center space-x-4">
+                        {/* Editar */}
                         <button
                           type="button"
                           onClick={() => openEditForm(device)}
@@ -193,9 +235,11 @@ export default function DeviceManager() {
                             />
                           </svg>
                         </button>
+
+                        {/* Eliminar */}
                         <button
                           type="button"
-                          onClick={() => handleDelete(device.id)}
+                          onClick={() => openDeleteConfirm(device)}
                           title="Eliminar dispositivo"
                           className="text-red-600 hover:text-red-400 transition-colors"
                         >
@@ -223,7 +267,7 @@ export default function DeviceManager() {
           )}
         </div>
 
-        {/* Modal para crear/editar dispositivo */}
+        {/* Modal de creación / edición */}
         {showForm && (
           <div className="mt-6">
             <DeviceForm
@@ -233,6 +277,17 @@ export default function DeviceManager() {
               onCancel={handleCancelForm}
             />
           </div>
+        )}
+
+        {/* Modal de confirmación de borrado */}
+        {showConfirm && (
+          <ConfirmModal
+            title="Eliminar dispositivo"
+            message={`¿Seguro que quieres eliminar “${deviceToDelete?.nombre}”?`}
+            onCancel={closeDeleteConfirm}
+            onConfirm={confirmDelete}
+            loading={deleting}
+          />
         )}
       </div>
     </div>
