@@ -217,9 +217,6 @@ export async function getRoles() {
 ───────────────────────────────────────────────────────────────────────────────*/
 
 // 1) Obtener todos los dispositivos (general)
-//    Nota: este endpoint devolverá **todos** los dispositivos si el backend
-//    lo permite al rol admin/root, en caso contrario devolverá solo los del
-//    usuario autenticado (en algunos backends se filtra automáticamente).
 //    Endpoint: GET /dispositivos
 export async function getAllDispositivos() {
   const res = await fetch(`${BASE_URL}/dispositivos/`, {
@@ -241,6 +238,18 @@ export async function getDispositivosUsuario(usuario_id) {
   return handleResponse(res);
 }
 
+// 2.b) Obtener solo los IDs de los dispositivos de un usuario
+export async function getIdDispositivosUsuario(usuario_id) {
+  const res = await fetch(`${BASE_URL}/dispositivos/usuario/${usuario_id}`, {
+    headers: {
+      ...getAuthHeader(),
+    },
+  });
+  const dispositivos = await handleResponse(res);
+  // Devolver solo un array de ids
+  return dispositivos.map(d => d.id);
+}
+
 // 3) Obtener un dispositivo por su ID
 //    Endpoint: GET /dispositivos/{dispositivo_id}
 export async function getDispositivoById(id) {
@@ -252,38 +261,30 @@ export async function getDispositivoById(id) {
 
 // 4) Crear un dispositivo nuevo para un usuario determinado
 //    Endpoint: POST /dispositivos/{usuario_id}
-//    Body: { mac, nombre, active }
-//    - Si el rol es “user”, siempre usaremos el propio user_id del localStorage.
-//    - Si el rol es “admin/root”, el formulario deberá enviar “usuario_id” explícito.
 export async function createDispositivo(data) {
-  // Determinar ID de usuario
   const usuarioId = data.usuario_id || getUserId();
   if (!usuarioId) {
     throw new Error("No se pudo determinar el usuario para crear el dispositivo");
   }
 
-  const res = await fetch(
-    `${BASE_URL}/dispositivos/${usuarioId}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...getAuthHeader(),
-      },
-      body: JSON.stringify({
-        mac: data.mac,
-        nombre: data.nombre,
-        active: data.active,
-      }),
-    }
-  );
+  const res = await fetch(`${BASE_URL}/dispositivos/${usuarioId}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...getAuthHeader(),
+    },
+    body: JSON.stringify({
+      mac: data.mac,
+      nombre: data.nombre,
+      active: data.active,
+    }),
+  });
 
   return handleResponse(res);
 }
 
 // 5) Actualizar un dispositivo existente
 //    Endpoint: PATCH /dispositivos/{dispositivo_id}
-//    Body: { mac?, nombre?, active? }
 export async function updateDispositivo(id, payload) {
   const res = await fetch(`${BASE_URL}/dispositivos/${id}`, {
     method: "PATCH",
@@ -342,8 +343,3 @@ export async function createRegistro({ fecha, coordenadas, mac }) {
   });
   return handleResponse(res);
 }
-
-// 3) (Opcional) Obtener registros de un dispositivo concreto
-//    Endpoint: GET /dispositivos/registros/{id_dispositivo}
-//    Ya lo cubre getDispositivoConRegistros()
-// ──────────────────────────────────────────────────────────────────────────────
