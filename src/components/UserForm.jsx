@@ -101,24 +101,6 @@ export default function UserForm({
             </div>
           )}
 
-          {isEditing && (
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Nueva contraseña (dejar vacío para no cambiar)
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  setError("");
-                }}
-                className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-accent-primary"
-                placeholder="********"
-              />
-            </div>
-          )}
-
           <div>
             <label className="block text-sm font-medium mb-1">Rol</label>
             <select
