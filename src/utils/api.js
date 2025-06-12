@@ -9,7 +9,7 @@
 
 const BASE_URL =
   import.meta.env.PUBLIC_API_URL?.trim().replace(/\/$/, "") ||
-  "http://87.223.137.184:30080/api/v2.3";
+  "http://geolocalizer.hagalink.es/api/v2.3";
 
 export function getToken() {
   if (typeof window === "undefined") return null;
