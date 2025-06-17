@@ -75,7 +75,7 @@ export async function loginConEmail(email, password) {
 
 // 3) Registro de usuario (por defecto rol_id = 3 = “user”)
 export async function register({ username, email, password, rol_id = 3 }) {
-  const res = await fetch(`${BASE_URL}/usuarios/`, {
+  const res = await fetch(`${BASE_URL}/usuarios`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, email, password, rol_id }),
@@ -114,7 +114,7 @@ export function getUserId() {
 
 // 1) Obtener todos los usuarios
 export async function getUsers() {
-  const res = await fetch(`${BASE_URL}/usuarios/`, {
+  const res = await fetch(`${BASE_URL}/usuarios`, {
     headers: {
       "Content-Type": "application/json",
       ...getAuthHeader(),
@@ -137,7 +137,7 @@ export async function getUserById(id) {
 // 3) Crear un usuario nuevo
 //    Body: { username, email, password, rol_id }
 export async function createUser({ username, email, password, rol_id }) {
-  const res = await fetch(`${BASE_URL}/usuarios/`, {
+  const res = await fetch(`${BASE_URL}/usuarios`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -203,7 +203,7 @@ export async function cambiarContrasena(usuario_id, token, nuevaPassword) {
 
 // 1) Obtener lista de roles
 export async function getRoles() {
-  const res = await fetch(`${BASE_URL}/roles/`, {
+  const res = await fetch(`${BASE_URL}/roles`, {
     headers: {
       "Content-Type": "application/json",
       ...getAuthHeader(),
