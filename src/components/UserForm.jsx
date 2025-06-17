@@ -66,7 +66,7 @@ export default function UserForm({
                 setUsername(e.target.value);
                 setError("");
               }}
-              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-accent-primary"
+              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-accent-primary text-black"
               placeholder="Usuario"
             />
           </div>
@@ -80,7 +80,7 @@ export default function UserForm({
                 setEmail(e.target.value);
                 setError("");
               }}
-              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-accent-primary"
+              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-accent-primary text-black"
               placeholder="usuario@ejemplo.com"
             />
           </div>
@@ -95,7 +95,7 @@ export default function UserForm({
                   setPassword(e.target.value);
                   setError("");
                 }}
-                className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-accent-primary"
+                className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-accent-primary text-black"
                 placeholder="********"
               />
             </div>
@@ -106,7 +106,7 @@ export default function UserForm({
             <select
               value={rolId}
               onChange={(e) => setRolId(e.target.value)}
-              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-accent-primary"
+              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-accent-primary "
             >
               {roles.map((r) => {
                 // Si el usuario autenticado es “admin”, no permitimos elegir rol “root” (id=1)
