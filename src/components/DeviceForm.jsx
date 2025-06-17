@@ -70,7 +70,7 @@ export default function DeviceForm({
                 setError("");
               }}
               disabled={submitting}
-              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-accent-primary"
+              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-accent-primary text-black"
               placeholder="00:1A:2B:3C:4D:5E"
             />
           </div>
@@ -85,7 +85,7 @@ export default function DeviceForm({
                 setError("");
               }}
               disabled={submitting}
-              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-accent-primary"
+              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-accent-primary text-black"
               placeholder="Nombre del dispositivo"
             />
           </div>
